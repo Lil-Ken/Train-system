@@ -8,6 +8,7 @@ void addBooking();
 void searchBooking();
 void modifyBooking();
 void displayBooking();
+void deleteBooking();
 int loginMember();
 void paymentMethod();
 int bookingNumber();
@@ -62,6 +63,9 @@ void bookingMain() {
 		case 4:
 			displayBooking();
 			break;
+		case 5:
+			deleteBooking();
+			break;
 		default:
 			return;
 		}
@@ -72,16 +76,17 @@ int bookingMenu() {
 	int mode;
 	do{
 		system("cls");
-		printf("==============================\n");
-		printf("       Select Function\n");
-		printf("==============================\n\n");
+		printf("===================================\n");
+		printf("         Select Function\n");
+		printf("===================================\n\n");
 
-		printf("Add Booking ---------------- 1\n");
-		printf("Search Booking ------------- 2\n");
-		printf("Modify Booking ------------- 3\n");
-		printf("Display Booking ------------ 4\n");
-		printf("Back ----------------------- 5\n\n");
-		printf("Enter Number --------------- ");
+		printf("Add Booking --------------------- 1\n");
+		printf("Search a Booking ---------------- 2\n");
+		printf("Modify Booking Details ---------- 3\n");
+		printf("Display Booking Details --------- 4\n");
+		printf("Cancel a Booking ---------------- 5\n");
+		printf("Back ---------------------------- 6\n\n");
+		printf("Enter Number -------------------- ");
 		scanf(" %d", &mode);
 		rewind(stdin);
 	} while (mode != 1 && mode != 2 && mode != 3 && mode != 4 && mode != 5);
@@ -106,8 +111,6 @@ void addBooking() {
 
 	// booking ID
 	member[loginNum].book[bookingNum].frontBookingID = 'B';
-	//if (member[loginNum].book[bookingNum].backBookingID != 1001)
-	//	addBookingID();
 
 		
 	printf("Your Booking ID is %c%d\n", member[loginNum].book[bookingNum].frontBookingID,
@@ -199,6 +202,7 @@ void searchBooking() {
 				member[loginNum].book[cnt].departureDate.year);
 			printf("%-16d%-16.2f\n", member[loginNum].book[cnt].quantity, member[loginNum].book[cnt].amount);
 			system("pause");
+			fclose(fp);
 			return;
 		}
 		cnt++;
@@ -284,12 +288,11 @@ void modifyBooking() {
 					break;
 				}
 
-				// write modified data into the temporary file
-				fwrite(&member[loginNum].book[cnt], sizeof(Booking), 1, fp2);
-
 				printf("Modify more (Y/N): ");
 				scanf(" %c", &ctn);
 			} while (ctn == 'Y' || ctn == 'y');
+			// write modified data into the temporary file
+			fwrite(&member[loginNum].book[cnt], sizeof(Booking), 1, fp2);
 		}
 		else {
 			// write the original data into temporary file
@@ -298,30 +301,32 @@ void modifyBooking() {
 
 		cnt++;
 	}
-	
-	fclose(fp);
-	fclose(fp2);
-	
-	FILE* fpt = fopen("Booking_Modify.bin", "rb");
-	FILE* fpt2 = fopen("Booking.bin", "wb");
 
-	if (fpt == NULL || fpt2 == NULL) {
-		printf("Unable to open file");
-		return;
+	if (found = 1) {
+		fclose(fp);
+		fclose(fp2);
+
+		FILE* fpt = fopen("Booking_Modify.bin", "rb");
+		FILE* fpt2 = fopen("Booking.bin", "wb");
+
+		if (fpt == NULL || fpt2 == NULL) {
+			printf("Unable to open file");
+			return;
+		}
+
+		cnt = 0;
+
+		// read the temporary file data
+		while (fread(&member[loginNum].book[cnt], sizeof(Booking), 1, fpt) == 1) {
+			// write it into original file
+			fwrite(&member[loginNum].book[cnt], sizeof(Booking), 1, fpt2);
+			cnt++;
+		}
+
+		fclose(fpt);
+		fclose(fpt2);
 	}
-
-	cnt = 0;
-	
-	// read the temporary file data
-	while (fread(&member[loginNum].book[cnt], sizeof(Booking), 1, fpt) == 1){
-		// write it into original file
-		fwrite(&member[loginNum].book[cnt], sizeof(Booking), 1, fpt2);
-		cnt++;
-	}
-
-	fclose(fpt);
-	fclose(fpt2);
-
+	else printf("Invalid Booking ID\n");
 	return;
 }
 
@@ -374,6 +379,84 @@ void displayBooking() {
 	fclose(fp);
 	return;
 }
+
+void deleteBooking() {
+
+	int selection, backBookingID;
+	char frontBookingID;
+	int cnt = 0, found = 0, comfirm;
+
+	FILE* fp = fopen("Booking.bin", "rb");
+	FILE* fp2 = fopen("Booking_Modify.bin", "wb");
+
+
+	if (fp == NULL || fp2 == NULL) {
+		printf("Unable to open file!\n");
+		system("pause");
+		return;
+	}
+
+	displayBooking();
+
+	printf("\n\nEnter Booking ID to cancel: ");
+	scanf(" %c%d", &frontBookingID, &backBookingID);
+
+	// read all data in the file
+	while (fread(&member[loginNum].book[cnt], sizeof(Booking), 1, fp) == 1) {
+
+		// check whether booking id correct or not
+		if (member[loginNum].book[cnt].frontBookingID == frontBookingID && member[loginNum].book[cnt].backBookingID == backBookingID) {
+			found = 1;
+
+			printf("Comfirm cancel(Y/N): ");
+			scanf("%c", &comfirm);
+			if (comfirm == 'N') {
+				return;
+			}
+			// don't need to record if comfirm cancel
+		}
+		else {
+			// write the original data into temporary file
+			fwrite(&member[loginNum].book[cnt], sizeof(Booking), 1, fp2);
+		}
+
+		cnt++;
+	}
+
+
+	if (found = 1) {
+		fclose(fp);
+		fclose(fp2);
+
+		FILE* fpt = fopen("Booking_Modify.bin", "rb");
+		FILE* fpt2 = fopen("Booking.bin", "wb");
+
+		if (fpt == NULL || fpt2 == NULL) {
+			printf("Unable to open file");
+			return;
+		}
+
+		cnt = 0;
+
+		// read the temporary file data
+		while (fread(&member[loginNum].book[cnt], sizeof(Booking), 1, fpt) == 1) {
+			// write it into original file
+			fwrite(&member[loginNum].book[cnt], sizeof(Booking), 1, fpt2);
+			cnt++;
+		}
+		printf("Successfuly cancel\n");
+		system("pause");
+
+		fclose(fpt);
+		fclose(fpt2);
+	}
+	else printf("Invalid Booking ID\n");
+	
+	return;
+	
+}
+
+
 
 int loginMember() {
 	int cnt = 0, backMemberID, pass;
@@ -454,8 +537,9 @@ void paymentMethod() {
 			printf("\n***Invalid Number***\n");
 			printf("Select payment method again: ");
 			scanf(" %c", &ctn);
+			rewind(stdin);
 		}
-	} while (ctn == '\n');
+	} while (!(method == 1 || method == 2 || method == 3 || method == 4 || method == 5));
 
 
 	switch (method){
@@ -576,23 +660,3 @@ void bookingID() {
 	fclose(fp);
 	return;
 }
-
-//void addBookingID() {
-//	FILE* fp;
-//	fp = fopen("Booking.bin", "rb");
-//
-//
-//	if (fp == NULL) {
-//		printf("Unable to open file");
-//		system("pause");
-//		return;
-//	}
-//
-//	fread(&member[loginNum].book[bookingNum], sizeof(Booking), 1, fp);
-//
-//	member[loginNum].book[bookingNum].backBookingID++;
-//
-//	fclose(fp);
-//
-//	return;
-//}

@@ -12,12 +12,11 @@ void deleteBooking();
 int loginMember();
 void paymentMethod();
 int bookingNumber();
-void addBookingNumber();
+int addBookingNumber();
 void bookingID();
 
 // 1. validation for every input
-// 2. modify system pause to press enter to continue  -  while( cont != '\n')
-// 3. add more 2 function(chatgpt)
+// one more function
 
 struct Date {
 	int day, month, year;
@@ -42,6 +41,7 @@ int loginNum = 0, bookingNum = 0;
 char ctn;
 
 void bookingMain() {
+
 	int mode;
 	strcpy(member[0].book[0].trainID, "T1001");
 
@@ -150,11 +150,11 @@ void addBooking() {
 	do{
 		printf("\nComfirm Booking (Y/N): ");
 		scanf(" %c", &comfirm);
-
+		rewind(stdin);
 		// Comfirmed Booking
 		if (comfirm == 'Y' || comfirm == 'y'){
 			fwrite(&member[loginNum].book[bookingNum], sizeof(Booking), 1, fp);
-			addBookingNumber();
+			bookingNum = addBookingNumber();
 		}
 	} while (!(comfirm == 'N' || comfirm == 'n' || comfirm == 'Y' || comfirm == 'y'));
 		
@@ -253,7 +253,7 @@ void modifyBooking() {
 					printf("Cancel modify ----------- 5\n");
 					printf("\nSelect a field to modify: ");
 					scanf(" %d", &selection);
-
+					rewind(stdin);
 				} while (!(selection == 1 || selection == 2 || selection == 3 || selection == 4 || selection == 5));
 
 				switch (selection) {
@@ -290,6 +290,7 @@ void modifyBooking() {
 
 				printf("Modify more (Y/N): ");
 				scanf(" %c", &ctn);
+				rewind(stdin);
 			} while (ctn == 'Y' || ctn == 'y');
 			// write modified data into the temporary file
 			fwrite(&member[loginNum].book[cnt], sizeof(Booking), 1, fp2);
@@ -409,7 +410,8 @@ void deleteBooking() {
 			found = 1;
 
 			printf("Comfirm cancel(Y/N): ");
-			scanf("%c", &comfirm);
+			scanf(" %c", &comfirm);
+			rewind(stdin);
 			if (comfirm == 'N') {
 				return;
 			}
@@ -533,6 +535,7 @@ void paymentMethod() {
 	do{
 		printf("Select payment method: ");
 		scanf(" %d", &method);
+		rewind(stdin);
 		if (!(method == 1 || method == 2 || method == 3 || method == 4 || method == 5)) {
 			printf("\n***Invalid Number***\n");
 			printf("Select payment method again: ");
@@ -584,6 +587,7 @@ int bookingNumber() {
 		number = 0;
 		fwrite(&number, sizeof(int), 1, fp); // write the booking number
 
+		fclose(fpt);
 		fclose(fp);
 		return number;
 	}
@@ -602,11 +606,9 @@ int bookingNumber() {
 		fclose(fp1);
 		return number;
 	}
-
-	return;
 }
 
-void addBookingNumber() {
+int addBookingNumber() {
 	int number;
 	FILE* fp, * fp1;
 
@@ -637,7 +639,7 @@ void addBookingNumber() {
 
 	fclose(fp1);
 			
-	return;
+	return number;
 }
 
 void bookingID() {

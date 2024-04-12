@@ -248,11 +248,6 @@ void displayMember() {
 
 	}
 	
-
-	while (!feof(fp)){
-		printf("%c%d %s %d %c %s %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
-	}
-
 	fclose(fp);
 
 }

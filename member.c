@@ -8,7 +8,7 @@ void searchMember();
 void modifyMember();
 void displayMember();
 void deleteMember();
-void recordMemberBin(int cnt, int backMemberID);
+void recordMemberBin(int backMemberID);
 void memberID(int* id);
 
 typedef struct {
@@ -116,6 +116,7 @@ void addMember() {
 		fprintf(fp, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 		// record in booking file
+		recordMemberBin(member.backMemberID, member.password);
 
 	} while (cont == 'y' || cont == 'Y');
 

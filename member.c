@@ -9,7 +9,7 @@ void modifyMember();
 void displayMember();
 void deleteMember();
 void recordMemberBin(int cnt, int backMemberID);
-void memberID(int *id);
+void memberID(int* id);
 
 typedef struct {
 	char bookingId[10], trainID[10];
@@ -78,14 +78,11 @@ void addMember() {
 	struct Member member;
 
 	memberID(&id);
-
+	member.backMemberID = id;
 
 	FILE* fp;
 	fp = fopen("member.txt", "a");
 	system("cls");
-
-
-	member.backMemberID = id;
 
 	do {
 		// auto generate ID:
@@ -101,24 +98,25 @@ void addMember() {
 		scanf("%d", &member.password);
 		printf("Enter your gender (M/F):");
 		rewind(stdin);
-		scanf("%c", & member.gender);
+		scanf("%c", &member.gender);
 		printf("Enter your IC:");
 		rewind(stdin);
 		scanf("%s", &member.IC);
 		printf("Enter your contact number:");
 		rewind(stdin);
 		scanf("%s", &member.contactNumber);
+
+		printf("Success to create a account!!!\nYour Member ID: %c%d\n\n", member.frontMemberID, member.backMemberID);
+
 		printf("Do you want to add more (Y to add more): ");
 		rewind(stdin);
 		scanf("%c", &cont);
-
-		printf("Success to create a account!!!\nYour Member ID: %c%d\n\n", member.frontMemberID, member.backMemberID);
 
 		// record in file
 		fprintf(fp, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 		// record in booking file
-		
+
 	} while (cont == 'y' || cont == 'Y');
 
 	fclose(fp);
@@ -144,7 +142,7 @@ void searchMember() {
 	do {
 		printf("Enter the Member ID:");
 		scanf(" %c%d", &frontID, &backID);
-		
+
 		while (!feof(fp)) {
 			fscanf(fp, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
 
@@ -175,7 +173,7 @@ void searchMember() {
 }
 
 void modifyMember() {
-	
+
 	char frontID, ctn;
 	int backID, found = 0, selection;
 	struct Member member;
@@ -195,9 +193,9 @@ void modifyMember() {
 	printf("Enter a Member ID to modify: ");
 	scanf(" %c%d", &frontID, &backID);
 
-	while (!feof(fp)){
+	while (!feof(fp)) {
 		fscanf(fp, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
-		if (frontID == 'M' && backID == member.backMemberID){
+		if (frontID == 'M' && backID == member.backMemberID) {
 			found = 1;
 			// loop for modify more data
 			do {
@@ -262,7 +260,7 @@ void modifyMember() {
 	fp = fopen("member.txt", "w");
 	fp1 = fopen("memberModify.txt", "r");
 
-	while (!feof(fp1)){
+	while (!feof(fp1)) {
 		fscanf(fp1, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
 		fprintf(fp, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 	}
@@ -279,7 +277,7 @@ void displayMember() {
 	FILE* fp;
 	fp = fopen("member.txt", "r");
 	system("cls");
-	
+
 	if (fp == NULL) {
 		printf("Enable to open the file\n");
 		return;
@@ -293,7 +291,7 @@ void displayMember() {
 		printf("%c%-13d %-14s %-14d %-14c %-14s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 	}
-	
+
 
 
 	fclose(fp);
@@ -305,7 +303,7 @@ void deleteMember() {
 	int backID, found = 0;
 	struct Member member;
 
-	FILE* fp, *fp1;
+	FILE* fp, * fp1;
 	fp = fopen("member.txt", "r");
 	fp1 = fopen("new.txt", "w");
 
@@ -343,18 +341,21 @@ void deleteMember() {
 	}
 }
 
-void memberID(int *id) {
+void memberID(int* id) {
 	struct Member member;
 	FILE* fpt = fopen("member.txt", "r");
 
-	if (fpt == NULL){
-		printf("Unable to open file");
+	if (fpt == NULL) {
+		*id = 1000;
+		return;
 	}
 
-	while (!feof(fpt)){
+	while (!feof(fpt)) {
 		fscanf(fpt, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, member.name, &member.password, &member.gender, member.IC, member.contactNumber);
 	}
-	*id = member.backMemberID + 1;
+
+	*id = member.backMemberID;
+
 
 	fclose(fpt);
 }

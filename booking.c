@@ -77,7 +77,7 @@ int bookingMenu() {
 	do{
 		system("cls");
 		printf("===================================\n");
-		printf("         Select Function\n");
+		printf("              Booking\n");
 		printf("===================================\n\n");
 
 		printf("Add Booking --------------------- 1\n");
@@ -501,7 +501,8 @@ int loginMember() {
 	return cnt;
 }
 
-void recordMemberBin(int cnt, int backMemberID, int pass) {
+void recordMemberBin(int backMemberID, int pass) {
+	int cnt = 0;
 	FILE* fp;
 	fp = fopen("Member_Login.bin", "wb");
 

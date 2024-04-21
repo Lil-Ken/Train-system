@@ -54,6 +54,8 @@ int memberMenu() {
 	int mode;
 	do {
 		system("cls");
+		
+
 		printf("==============================\n");
 		printf("       Select Function\n");
 		printf("==============================\n\n");
@@ -341,6 +343,8 @@ void deleteMember() {
 		rename("new.txt", "member.txt"); // Rename the temporary file to the original file name
 	}
 }
+
+
 
 void memberID(int* id) {
 	struct Member member;

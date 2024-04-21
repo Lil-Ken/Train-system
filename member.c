@@ -336,11 +336,11 @@ void deleteMember() {
 
 	if (!found) {
 		printf("Member not found.\n");
-		remove("new.txt"); // Delete the temporary file
+		remove("new.txt"); 
 	}
 	else {
-		remove("member.txt"); // Delete the original file
-		rename("new.txt", "member.txt"); // Rename the temporary file to the original file name
+		remove("member.txt"); 
+		rename("new.txt", "member.txt");
 	}
 }
 

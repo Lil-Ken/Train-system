@@ -109,9 +109,10 @@ int addStaff() {
 		scanf("%[^\n]", staff.name);	rewind(stdin);
 		printf("Staff position :");
 		scanf("%s", staff.position);	rewind(stdin);
-		printf("Password ( 6 degit number) :");
-		scanf("%d", &staff.pass);
-		rewind(stdin);
+		do {
+			printf("Password (6 degit number) :");
+			scanf("%d", &staff.pass); rewind(stdin);
+		} while (staff.pass <=99999 && staff.pass >= 1000000);
 
 		fwrite(&staff, sizeof(staffinfo), 1, stf);
 
@@ -376,8 +377,9 @@ int deleteStaff() {
 
 int staffid() {
 	staffinfo staff;
-	int num=0, num2;
-
+	
+	int num=0;
+	int num2;
 	
 
 	FILE* stf;
@@ -390,16 +392,25 @@ int staffid() {
 		if (stf2 == NULL) {
 			printf("Unable to open file");
 			system("pause");
-			return;
+			return;	
+
 		}
-		num2 = 0;
-		fwrite(&num2, sizeof(num2), 1, stf2);
+		staff.backID = 1001;
+		num++;
+		
+		fwrite(&num, sizeof(int), 1, stf2);
 		fclose(stf2);
+		return staff.backID;
+
+		
 
 	}
-	fread(&num, sizeof(int), 1, stf);
+	
 
-	;
+
+	fread(&num, sizeof(int), 1, stf); 
+
+	
 	if (num == 0) {
 		staff.backID = 1001;
 		num++;
@@ -419,7 +430,7 @@ int staffid() {
 		system("pause");
 		return;
 	}
-	fwrite(&num, sizeof(num), 1, stf1);
+	fwrite(&num, sizeof(int), 1, stf1);
 
 	fclose(stf1);
 	return staff.backID;
@@ -445,11 +456,15 @@ int staffPayslip() {
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 
 		if (backid == staff.backID) {
-			num = 1;
-			printf("Please enter your basic pay : ");
-			scanf("%lf", &basic);
+			num = 1;	
+		
+				printf("Please enter your basic pay : "); rewind(stdin);
+				scanf("%lf", &basic);
+
+			
+			
 			do {
-				printf("Do you OT in this month :\n");
+				printf("Do you OT in this month :\n"); rewind(stdin);
 				printf("[1] YES\n");
 				printf("[2] NO\n");
 				scanf("%d", &ot);
@@ -497,7 +512,7 @@ int staffPayslip() {
 			printf("                |                                      |NETT PAY:%29.2f|\n", basic + othour + allowance - epf - socso - eis);
 			printf("                |______________________________________|______________________________________|\n");
 
-			
+			system("pause");
 
 		}
 

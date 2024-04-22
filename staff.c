@@ -109,10 +109,11 @@ int addStaff() {
 		scanf("%[^\n]", staff.name);	rewind(stdin);
 		printf("Staff position :");
 		scanf("%s", staff.position);	rewind(stdin);
+
 		do {
 			printf("Password (6 degit number) :");
 			scanf("%d", &staff.pass); rewind(stdin);
-		} while (staff.pass <=99999 && staff.pass >= 1000000);
+		} while (staff.pass <=99999 || staff.pass >= 1000000);
 
 		fwrite(&staff, sizeof(staffinfo), 1, stf);
 
@@ -138,7 +139,7 @@ int addStaff() {
 
 int searchStaff() {
 	char frontid;
-	int backid;
+	int backid,num=0;
 	staffinfo staff;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
@@ -154,14 +155,18 @@ int searchStaff() {
 
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 		if (backid == staff.backID) {
-
+			num = 1;
 			printf("\n\nID             NAME             POSITION    \n");
 			printf("------------------------------------------------\n");
 			printf("%c%-12d  %-15s  %-15s \n", staff.frontID, staff.backID, staff.name, staff.position);
-			
+
 
 		}
 
+	}
+	
+	if (num == 0) {
+		printf("invalid ID, please try again\n");
 	}
 	system("pause");
 	return;
@@ -249,6 +254,9 @@ int modifyStaff() {
 			fwrite(&staff, sizeof(staffinfo), 1, stf);
 		}
 	}
+	else
+		printf("invalid ID, please try again\n");
+	system("pause");
 
 }
 
@@ -302,11 +310,11 @@ int passwordRecovery() {
 
 	}
 	if (num1 == 0) {
-		printf("Invalid, please try again");
+		printf("Invalid ID , please try again\n");
 	}
 
 	fclose(stf);
-
+	system("pause");
 }
 
 int deleteStaff() {
@@ -369,11 +377,14 @@ int deleteStaff() {
 		printf("\n\n\nDone Delete staff\n\n\n");
 
 	}
-	else printf("Invalid, please try again");
+	else printf("Invalid ID or password, please try again");
+	
 
 	fclose(stf);
 	fclose(stf1);
+	system("pause");
 }
+
 
 int staffid() {
 	staffinfo staff;
@@ -457,9 +468,11 @@ int staffPayslip() {
 
 		if (backid == staff.backID) {
 			num = 1;	
-		
+			do {
 				printf("Please enter your basic pay : "); rewind(stdin);
 				scanf("%lf", &basic);
+			} while (basic < 0 || basic>10000000000000);
+			
 
 			
 			
@@ -471,8 +484,11 @@ int staffPayslip() {
 			} while (ot != 1 && ot != 2);
 			
 			if (ot == 1) {
-				printf("how many hour you OT : ");
-				scanf("%d", &othour);
+				do {
+					printf("how many hour you OT : ");
+					scanf("%d", &othour);
+				} while (othour < 0 || othour>10000);
+				
 			}
 			epf = basic * 0.11;
 			socso = basic * 0.05;

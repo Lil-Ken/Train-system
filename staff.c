@@ -1,4 +1,4 @@
-#include <stdio.h>
+  #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #pragma warning(disable:4996)
@@ -12,16 +12,17 @@ int displayStaff();
 int passwordRecovery();
 int deleteStaff();
 int staffid();
+int staffPayslip();
 
 typedef struct {
 	char  name[51], frontID, position[51];
-	int pass, passwrec, backID;
+	int pass, backID;
 
 }staffinfo;
 
 
 
-void main() {
+void staffMain() {
 	int mode;
 	mode = staffMenu();
 	switch (mode) {
@@ -40,6 +41,9 @@ void main() {
 	case 5:
 		deleteStaff();
 		break;
+	case 6:
+		staffPayslip();
+		break;
 	case 7:
 		passwordRecovery();
 		break;
@@ -51,12 +55,12 @@ void main() {
 
 
 int staffMenu() {
-	int mode,num;
+	int mode, num;
 
 
 	do {
 
-
+		
 		system("cls");
 		printf("==============================\n");
 		printf("       Select Function\n");
@@ -67,11 +71,12 @@ int staffMenu() {
 		printf("Modify Staff ------------ 3\n");
 		printf("Display Staff ----------- 4\n");
 		printf("Delete Staff ------------ 5\n");
-		printf("Back -------------------- 6\n");
-		printf("Forgot Password --------- 7\n\n");
+		printf("Staff Payslip ----------- 6\n");
+		printf("Forgot Password --------- 7\n");
+		printf("Back -------------------- 8\n\n");
 		printf("Enter Number --------------- ");
 		scanf("%d", &mode); rewind(stdin);
-	} while (mode != 1 && mode != 2 && mode != 3 && mode != 4 && mode != 5 && mode != 6 && mode != 7);
+	} while (mode != 1 && mode != 2 && mode != 3 && mode != 4 && mode != 5 && mode != 6 && mode != 7 && mode!= 8);
 
 	return mode;
 
@@ -80,44 +85,33 @@ int staffMenu() {
 
 int addStaff() {
 	staffinfo staff;
-	int exit,recovery;
+	int exit ;
 	staff.frontID = 'S';
-	
-	
-	
+
+
+
 	do {
-	
-	
-		
+
+
+
 		FILE* stf;
 		stf = fopen("staff.bin", "ab");
 
 		if (stf == NULL) {
 			printf("disable to open file");
-			
+			system("pause");
 			return;
 		}
 		staff.backID = staffid();
-		
-		printf("Your staff id is %c%d\n", staff.frontID,staff.backID);
+
+		printf("Your staff id is %c%d\n", staff.frontID, staff.backID);
 		printf("Staff Name :");
 		scanf("%[^\n]", staff.name);	rewind(stdin);
 		printf("Staff position :");
 		scanf("%s", staff.position);	rewind(stdin);
-		printf("Password :");
+		printf("Password ( 6 degit number) :");
 		scanf("%d", &staff.pass);
 		rewind(stdin);
-		printf("Set a 6 number be your password recovery : ");
-		scanf("%d", &staff.passwrec);
-		printf("Enter again the 6 number : ");
-		scanf("%d", &recovery);
-		while (staff.passwrec != recovery) {
-			printf("Enter wrong,please enter again\n");
-			printf("Set a 6 number be your password recovery : ");
-			scanf("%d", &staff.passwrec);
-			printf("Enter again the 6 number : ");
-			scanf("%d", &recovery);
-		}
 
 		fwrite(&staff, sizeof(staffinfo), 1, stf);
 
@@ -126,7 +120,7 @@ int addStaff() {
 		printf("\n==============================\n");
 		printf("     Add staff completed\n");
 		printf("==============================\n\n");
-		printf("[1] Countinue \n");
+		printf("[1] Countinue add staff\n");
 		printf("[2] Exit\n :");
 		scanf("%d", &exit); rewind(stdin);
 		if (exit != 1 && exit != 2) {
@@ -135,8 +129,8 @@ int addStaff() {
 		}
 	} while (exit == 1);
 
-	
-		system("pause");
+
+	system("pause");
 
 }
 
@@ -154,33 +148,36 @@ int searchStaff() {
 	}
 
 
-	printf("Please enter your id ");
-	scanf("%c%d",&frontid,&backid);
+	printf("Please enter your id : ");
+	scanf("%c%d", &frontid, &backid);
 
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 		if (backid == staff.backID) {
-			printf("\n\nID \t NAME \t\t POSITION \t PASSWORD \n");
-			printf("---------------------------------------\n");
-			printf("%c%d \t %s \t\t %s \t %d\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
-		}
-		
-	}
 
+			printf("\n\nID             NAME             POSITION    \n");
+			printf("------------------------------------------------\n");
+			printf("%c%-12d  %-15s  %-15s \n", staff.frontID, staff.backID, staff.name, staff.position);
+			
+
+		}
+
+	}
+	system("pause");
+	return;
 
 }
-
 
 
 int modifyStaff() {
 	staffinfo staff;
 	char frontid, ctn;
-	int backid,selection,num=0;
+	int backid, selection, num = 0;
 
 	FILE* stf;
 	FILE* stf1;
 	stf = fopen("staff.bin", "rb");
 	stf1 = fopen("staffmodify.bin", "wb");
-	if (stf == NULL || stf1 ==NULL) {
+	if (stf == NULL || stf1 == NULL) {
 		printf("Unabale to open file");
 		return;
 	}
@@ -192,11 +189,12 @@ int modifyStaff() {
 		if (staff.backID == backid) {
 			num = 1;
 			do {
-			printf("\n\nID \t NAME \t\t POSITION \t PASSWORD \n");
-			printf("---------------------------------------\n");
-			printf("%c%d \t %s \t\t %s \t %d\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
-			
-			
+
+				printf("\n\nID             NAME             POSITION         PASSWORD \n");
+				printf("-------------------------------------------------------------\n");
+				printf("%c%-12d  %-15s  %-15s  %-15d\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
+
+
 				printf("\nName -------------------- 1\n");
 				printf("password ---------------- 2\n");
 				printf("position ---------------- 3\n");
@@ -223,8 +221,10 @@ int modifyStaff() {
 				default:
 					break;
 				}
-				printf("Need to modify more (Y/N) : ");
-				scanf("%c", &ctn);
+				do {
+					printf("Need to modify more (Y/N) : ");
+					scanf("%c", &ctn);
+				}while(ctn != 'Y' && ctn != 'y' && ctn != 'N' && ctn != 'n');
 			} while (ctn == 'Y' || ctn == 'y');
 			fwrite(&staff, sizeof(staffinfo), 1, stf1);
 		}
@@ -235,7 +235,7 @@ int modifyStaff() {
 
 
 	if (num == 1) {
-		FILE* stf; 
+		FILE* stf;
 		FILE* stf1;
 		stf = fopen("staff.bin", "wb");
 		stf1 = fopen("staffmodify.bin", "rb");
@@ -243,7 +243,7 @@ int modifyStaff() {
 			printf("Unabale to open file");
 			return;
 		}
-		
+
 		while (fread(&staff, sizeof(staffinfo), 1, stf1) != 0) {
 			fwrite(&staff, sizeof(staffinfo), 1, stf);
 		}
@@ -252,36 +252,30 @@ int modifyStaff() {
 }
 
 
-
-
-
-
-
-
-
-
 int displayStaff() {
 	staffinfo staff;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
 	if (stf == NULL) {
-		printf("Unabale to open file");
+		printf("Unable to open file");
+		system("pause");
 		return;
 	}
 
-	printf("\n\nID \t NAME \t\t POSITION \t PASSWORD \n");
-	printf("---------------------------------------\n");
+	printf("\n\nID             NAME             POSITION    \n");
+	printf("------------------------------------------------\n");
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
-		printf("%c%d \t %s \t %s \t\t %d\n", staff.frontID,staff.backID,staff.name,staff.position,staff.pass);
+		printf("%c%-12d  %-15s  %-15s \n", staff.frontID, staff.backID, staff.name, staff.position);
 	}
 	fclose(stf);
-
+	system("pause");
+	return;
 }
 
 int passwordRecovery() {
 	staffinfo staff;
-	int backid, num,num1=0;
+	int backid, num1 = 0;
 	char frontid;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
@@ -291,24 +285,24 @@ int passwordRecovery() {
 		return;
 	}
 
+
+	printf("Enter your staff ID : ");
+	scanf("%c%d", &frontid, &backid); rewind(stdin);
 	
-		printf("Enter your staff ID : ");
-		scanf("%c%d", &frontid, &backid); rewind(stdin);
 
-		printf("Enter your 6 digit number : ");
-		scanf("%d", &num); rewind(stdin);
-
-		while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
-			if (num == staff.passwrec && backid==staff.backID) {
-				num1 = 1;
-				printf("\n\nID \t NAME \t\t POSITION \t PASSWORD \n");
-				printf("%c%d \t %s \t %s \t\t %d\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
-			}
-
+	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
+		if (backid == staff.backID) {
+			num1 = 1;
+			printf("\n\nID             NAME             POSITION         PASSWORD \n");
+			printf("-------------------------------------------------------------\n");
+			printf("%c%-12d  %-15s  %-15s  %-15d\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
+			system("pause");
 		}
-		if (num1 == 0) {
-			printf("Invalid, please try again");
-		}
+
+	}
+	if (num1 == 0) {
+		printf("Invalid, please try again");
+	}
 
 	fclose(stf);
 
@@ -316,12 +310,12 @@ int passwordRecovery() {
 
 int deleteStaff() {
 	staffinfo staff;
-	int backid, passw,num=0;
-	char frontid,ctn;
+	int backid, passw, num = 0;
+	char frontid, ctn;
 
 	FILE* stf;
 	FILE* stf1;
-	stf = fopen("staff.bin", "rb"); 
+	stf = fopen("staff.bin", "rb");
 	stf1 = fopen("staffmotify.bin", "wb");
 
 	if (stf == NULL && stf1 == NULL) {
@@ -345,7 +339,7 @@ int deleteStaff() {
 			if (ctn == 'N') {
 				return;
 			}
-		
+
 		}
 		else {
 			fwrite(&staff, sizeof(staffinfo), 1, stf1);
@@ -371,9 +365,10 @@ int deleteStaff() {
 			fwrite(&staff, sizeof(staffinfo), 1, stf);
 		}
 
+		printf("\n\n\nDone Delete staff\n\n\n");
 
 	}
-	else printf("Invalid ID please try again");
+	else printf("Invalid, please try again");
 
 	fclose(stf);
 	fclose(stf1);
@@ -381,36 +376,34 @@ int deleteStaff() {
 
 int staffid() {
 	staffinfo staff;
-	int num,num2;
+	int num=0, num2;
+
 	
-	/*FILE* stf2;
-	stf2 = fopen("staddid.bin", "wb");
-	if (stf2 == NULL) {
-		printf("Unable to open file");
-		system("pause");
-		return;
-	}
-	num2 = 0;
-	fwrite(&num2, sizeof(num2), 1, stf2);
-
-	fclose(stf2);*/
-
 
 	FILE* stf;
-	
-	stf = fopen("staddid.bin", "rb");
+
+	stf = fopen("staffid.bin", "rb");
 	if (stf == NULL) {
-		printf("Unable to open file");
-		system("pause");
-		return;
+
+		FILE* stf2;
+		stf2 = fopen("staffid.bin", "wb");
+		if (stf2 == NULL) {
+			printf("Unable to open file");
+			system("pause");
+			return;
+		}
+		num2 = 0;
+		fwrite(&num2, sizeof(num2), 1, stf2);
+		fclose(stf2);
+
 	}
 	fread(&num, sizeof(int), 1, stf);
-	
+
 	;
 	if (num == 0) {
 		staff.backID = 1001;
 		num++;
-		
+
 	}
 	else {
 		staff.backID = num + 1001;
@@ -420,15 +413,100 @@ int staffid() {
 	fclose(stf);
 
 	FILE* stf1;
-	stf1 = fopen("staddid.bin", "wb");
+	stf1 = fopen("staffid.bin", "wb");
 	if (stf1 == NULL) {
 		printf("Unable to open file");
 		system("pause");
 		return;
 	}
 	fwrite(&num, sizeof(num), 1, stf1);
-	
+
 	fclose(stf1);
 	return staff.backID;
 }
+
+int staffPayslip() {
+	staffinfo staff;
+	int backid,ot,othour=0,num=0;
+	char frontid;
+	double basic,allowance=600.00,epf,socso,eis;
+	FILE* stf;
+	stf = fopen("staff.bin", "rb");
+
+	if (stf == NULL) {
+
+		printf("Enable to open file");
+		system("pause");
+	}
+
+	printf("Enter staff ID : ");
+	scanf("%c%d", &frontid, &backid);
+
+	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
+
+		if (backid == staff.backID) {
+			num = 1;
+			printf("Please enter your basic pay : ");
+			scanf("%lf", &basic);
+			do {
+				printf("Do you OT in this month :\n");
+				printf("[1] YES\n");
+				printf("[2] NO\n");
+				scanf("%d", &ot);
+			} while (ot != 1 && ot != 2);
+			
+			if (ot == 1) {
+				printf("how many hour you OT : ");
+				scanf("%d", &othour);
+			}
+			epf = basic * 0.11;
+			socso = basic * 0.05;
+			eis = basic * 0.02;
+			othour = othour * 11.00;
+			printf("\t\t     __________              ___        ___             __      __      __________\n");
+			printf("\t\t    |   ____   |     /\\      \\  \\      /  /            |  |    |__|    |   ____   |\n");
+			printf("\t\t    |  |    |  |    /  \\      \\  \\    /  /  ______     |  |     __     |  |    |  |   \n");
+			printf("\t\t    |  |____|  |   / /\\ \\      \\  \\  /  /  /  __  \\    |  |    |  |    |  |____|  |    \n");
+			printf("\t\t    |    ______|  / /  \\ \\      \\  \\/  /  /  /  \\__\\   |  |    |  |    |    ______|  \n");
+			printf("\t\t    |   |        / /____\\ \\      \\    /   \\  \\_____    |  |    |  |    |   |       \n");
+			printf("\t\t    |   |       /  ______  \\      |  |     \\_____  \\   |  |    |  |    |   | \n");
+			printf("\t\t    |   |      /  /      \\  \\     |  |    ______/  /   |  |    |  |    |   |\n");
+			printf("\t\t    |___|     /  /        \\  \\    |__|    \\_______/    |__|    |__|    |___|\n\n");
+
+			printf("           ---------------------------------------------------------------------------------------------\n\n");
+
+
+			printf("                NAME : %s \t\t\t\t\t\t\tEND PAYMENT\n", staff.name);
+			printf("                POSITION : %s\n", staff.position);
+			printf("                STAFF ID : %c%d\n", staff.frontID, staff.backID);
+
+
+
+			printf("                _______________________________________________________________________________\n");
+			printf("                |Earning/income                        |DETUCTION                             |\n");
+			printf("                |______________________________________|______________________________________|\n");
+			printf("                |BASIC PAY:%28.2f|EMPLOYEE EPF:%25.2f|\n", basic, epf);
+			printf("                |NORMAL OT:%28.2f|EMPLOYEE SOCSO:%23.2f|\n", othour, socso);
+			printf("                |FIXED ALLOWANCE:%22.2f|EMPLOYEE EIS:%25.2f|\n", allowance, eis);
+			printf("                |                                      |                                      |\n");
+			printf("                |                                      |                                      |\n");
+			printf("                |                                      |                                      |\n");
+			printf("                |______________________________________|______________________________________|\n");
+			printf("                |GROSS PAY:%28.2f|TOTAL DETUCTION:%22.2f|\n", basic + othour + allowance, epf + socso + eis);
+			printf("                |______________________________________|______________________________________|\n");
+			printf("                |                                      |NETT PAY:%29.2f|\n", basic + othour + allowance - epf - socso - eis);
+			printf("                |______________________________________|______________________________________|\n");
+
+			
+
+		}
+
+		
+	}
+	if (num == 0) {
+		printf("invalid ID, please try again\n");
+		system("pause");
+	}
+}
+
 

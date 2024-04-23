@@ -1,4 +1,4 @@
-  #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #pragma warning(disable:4996)
@@ -15,7 +15,7 @@ int staffid();
 int staffPayslip();
 
 typedef struct {
-	char  name[51], frontID, position[51],fatherName[51],pass[7];
+	char  name[51], frontID, position[51], fatherName[51], pass[7];
 	int  backID;
 
 }staffinfo;
@@ -44,7 +44,7 @@ void staffMain() {
 	case 6:
 		staffPayslip();
 		break;
-	
+
 	default:
 		break;
 	}
@@ -58,7 +58,7 @@ int staffMenu() {
 
 	do {
 
-		
+
 		system("cls");
 		printf("==============================\n");
 		printf("       Select Function\n");
@@ -73,7 +73,7 @@ int staffMenu() {
 		printf("Back -------------------- 7\n\n");
 		printf("Enter Number --------------- ");
 		scanf("%d", &mode); rewind(stdin);
-	} while (mode != 1 && mode != 2 && mode != 3 && mode != 4 && mode != 5 && mode != 6 && mode != 7 );
+	} while (mode != 1 && mode != 2 && mode != 3 && mode != 4 && mode != 5 && mode != 6 && mode != 7);
 
 	return mode;
 
@@ -82,7 +82,7 @@ int staffMenu() {
 
 int addStaff() {
 	staffinfo staff;
-	int exit,passrec,valid=0;
+	int exit, passrec, valid = 0;
 	staff.frontID = 'S';
 
 
@@ -107,42 +107,42 @@ int addStaff() {
 		printf("Staff position :");
 		scanf("%s", staff.position);	rewind(stdin);
 
-		
+
 
 		do {
 			printf("Password (6 degit number) :");
 			scanf("%s", &staff.pass); rewind(stdin);
-			
+
 			if (strlen(staff.pass) != 6) {
 				printf("Invalid input. Password must be 6 digits.\n");
-				continue; 
+				continue;
 			}
-			int i ;
+			int i;
 
-			for ( i = 0; i < 6; i++) {
-				if (isdigit(staff.pass[i])==0) {
+			for (i = 0; i < 6; i++) {
+				if (isdigit(staff.pass[i]) == 0) {
 					printf("Invalid input. Password must contain only digits.\n");
 					break;
 				}
-				
-					
+
+
 			}
 			if (i == 6) {
 				valid = 1;
-		
+
 			}
 
-		} while (valid==0);
+		} while (valid == 0);
 
 
 
-			
-			
+
+
 
 		do {
 			printf("Please enter your father name be your password recovery : ");
 			scanf("%[^\n]", &staff.fatherName);  rewind(stdin);
-			printf("Confirm father name is %s ?\n",staff.fatherName);
+			printf("Confirm father name is %s ?\n", staff.fatherName);
 			printf("[1] YES \n");
 			printf("[2] NO \n");
 			scanf("%d", &passrec); rewind(stdin);
@@ -154,10 +154,10 @@ int addStaff() {
 				scanf("%d", &passrec); rewind(stdin);
 			}
 		} while (passrec != 1);
-		
 
-		
-		
+
+
+
 		fwrite(&staff, sizeof(staffinfo), 1, stf);
 
 		fclose(stf);
@@ -182,7 +182,7 @@ int addStaff() {
 
 int searchStaff() {
 	char frontid;
-	int backid,num=0;
+	int backid, num = 0;
 	staffinfo staff;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
@@ -204,20 +204,20 @@ int searchStaff() {
 			printf("%c%-12d  %-15s  %-15s  %-15s\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
 			system("pause");
 			staffMain();
-			
+
 
 		}
 
 	}
-	
+
 	if (num == 0) {
 		printf("Invalid ID, please try again\n\n");
 		system("pause");
 		staffMain();
 	}
 
-	
-	
+
+
 
 }
 
@@ -267,7 +267,7 @@ int modifyStaff() {
 					scanf("%s", &staff.position);
 					rewind(stdin);
 					break;
-				case 3:	
+				case 3:
 					printf("Enter new password : ");
 					scanf("%s", &staff.pass);
 					rewind(stdin);
@@ -278,7 +278,7 @@ int modifyStaff() {
 				do {
 					printf("Need to modify more (Y/N) : ");
 					scanf("%c", &ctn);
-				}while(ctn != 'Y' && ctn != 'y' && ctn != 'N' && ctn != 'n');
+				} while (ctn != 'Y' && ctn != 'y' && ctn != 'N' && ctn != 'n');
 			} while (ctn == 'Y' || ctn == 'y');
 			fwrite(&staff, sizeof(staffinfo), 1, stf1);
 		}
@@ -308,9 +308,9 @@ int modifyStaff() {
 		printf("Invalid ID, please try again\n\n");
 		system("pause");
 		staffMain();
-		
+
 	}
-		
+
 	system("pause");
 	staffMain();
 
@@ -341,7 +341,7 @@ int displayStaff() {
 int passwordRecovery() {
 	staffinfo staff;
 	int backid, num1 = 0;
-	char frontid,passrec[51];
+	char frontid, passrec[51];
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -356,15 +356,15 @@ int passwordRecovery() {
 	printf("Please enter your father name : ");
 	scanf("%[^\n]", passrec);
 
-	
+
 
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 		if (backid == staff.backID) {
 			if (strcmp(passrec, staff.fatherName) == 0) {
 				num1 = 1;
-				
+
 				printf("Your password is %s\n\n", staff.pass);
-				
+
 			}
 		}
 
@@ -372,12 +372,12 @@ int passwordRecovery() {
 	if (num1 == 0) {
 		int try;
 		printf("Invalid ID, please try again\n");
-	
+
 	}
 
 	fclose(stf);
 	system("pause");
-	
+
 }
 
 int deleteStaff() {
@@ -454,10 +454,10 @@ int deleteStaff() {
 
 int staffid() {
 	staffinfo staff;
-	
-	int num=0;
+
+	int num = 0;
 	int num2;
-	
+
 
 	FILE* stf;
 
@@ -469,25 +469,25 @@ int staffid() {
 		if (stf2 == NULL) {
 			printf("Unable to open file");
 			system("pause");
-			return;	
+			return;
 
 		}
 		staff.backID = 1001;
 		num++;
-		
+
 		fwrite(&num, sizeof(int), 1, stf2);
 		fclose(stf2);
 		return staff.backID;
 
-		
+
 
 	}
-	
 
 
-	fread(&num, sizeof(int), 1, stf); 
 
-	
+	fread(&num, sizeof(int), 1, stf);
+
+
 	if (num == 0) {
 		staff.backID = 1001;
 		num++;
@@ -515,9 +515,9 @@ int staffid() {
 
 int staffPayslip() {
 	staffinfo staff;
-	int backid,ot,othour=0,num=0;
+	int backid, ot, othour = 0, num = 0;
 	char frontid;
-	double basic,allowance=600.00,epf,socso,eis;
+	double basic, allowance = 600.00, epf, socso, eis;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -533,7 +533,7 @@ int staffPayslip() {
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 
 		if (backid == staff.backID) {
-			num = 1;	
+			num = 1;
 			do {
 				do {
 					printf("Please enter your basic pay : "); rewind(stdin);
@@ -541,21 +541,21 @@ int staffPayslip() {
 				} while (basic < 0 || basic>10000000000000);
 
 			} while (isdigit(basic) != 0);
-			
-			
+
+
 			do {
 				printf("Do you OT in this month :\n"); rewind(stdin);
 				printf("[1] YES\n");
 				printf("[2] NO\n");
 				scanf("%d", &ot);
 			} while (ot != 1 && ot != 2);
-			
+
 			if (ot == 1) {
 				do {
 					printf("how many hour you OT : ");
 					scanf("%d", &othour);
 				} while (othour < 0 || othour>10000);
-				
+
 			}
 			epf = basic * 0.11;
 			socso = basic * 0.05;
@@ -599,16 +599,15 @@ int staffPayslip() {
 
 		}
 
-		
+
 	}
 	if (num == 0) {
 		printf("invalid ID, please try again\n");
 		system("pause");
 		staffMain();
-		
+
 	}
 	staffMain();
 
 }
-
 

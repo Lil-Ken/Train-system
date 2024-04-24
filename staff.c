@@ -44,7 +44,9 @@ void staffMain() {
 	case 6:
 		staffPayslip();
 		break;
-
+	case 7:
+		passwordRecovery();
+		break;
 	default:
 		break;
 	}
@@ -152,6 +154,9 @@ int addStaff() {
 			}
 		} while (passrec != 1);
 
+		for ( int i = 0; staff.fatherName[i] != '\0'; i++) {
+			staff.fatherName[i] = toupper(staff.fatherName[i]);
+		}
 
 
 
@@ -380,12 +385,14 @@ int passwordRecovery() {
 		return;
 	}
 
-	printf("Enter  staff ID :S ");
+	printf("Enter  staff ID :");
 	scanf("%c%d", &frontid, &backid); rewind(stdin);
 	printf("Please enter your father name : ");
 	scanf("%[^\n]", passrec);
 
-
+	for (int i = 0; passrec[i] != '\0'; i++) {
+		passrec[i] = toupper(passrec[i]);
+	}
 
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 		if (backid == staff.backID) {
@@ -396,10 +403,12 @@ int passwordRecovery() {
 
 			}
 		}
+		
+			
 
 	}
 	if (num1 == 0) {
-		int try;
+	
 		printf("Invalid ID, please try again\n");
 
 	}

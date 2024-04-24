@@ -110,7 +110,7 @@ int addStaff() {
 
 
 		do {
-			printf("Password (6 degit number) :");
+			printf("Password (6 digit number) :");
 			scanf("%s", &staff.pass); rewind(stdin);
 
 			if (strlen(staff.pass) != 6) {
@@ -147,11 +147,8 @@ int addStaff() {
 			printf("[2] NO \n");
 			scanf("%d", &passrec); rewind(stdin);
 			if (passrec != 1 && passrec != 2) {
-				printf("Input not valid,please try again\n ");
-				printf("Confirm father name is %s ?\n", staff.fatherName);
-				printf("[1] YES \n");
-				printf("[2] NO \n");
-				scanf("%d", &passrec); rewind(stdin);
+				printf("Input not valid,please try again\n");
+				
 			}
 		} while (passrec != 1);
 
@@ -168,7 +165,7 @@ int addStaff() {
 		printf("[1] Countinue add staff\n");
 		printf("[2] Exit\n :");
 		scanf("%d", &exit); rewind(stdin);
-		if (exit != 1 && exit != 2) {
+		while (exit != 1 && exit != 2) {
 			printf("Input not valid,please try again : ");
 			scanf("%d", &exit); rewind(stdin);
 		}
@@ -225,7 +222,7 @@ int searchStaff() {
 int modifyStaff() {
 	staffinfo staff;
 	char frontid, ctn;
-	int backid, selection, num = 0;
+	int backid, selection, num = 0,valid=0;
 
 	FILE* stf;
 	FILE* stf1;
@@ -235,6 +232,7 @@ int modifyStaff() {
 		printf("Unabale to open file");
 		return;
 	}
+	
 	printf("Enter the staff ID need to modify : ");
 	scanf("%c%d", &frontid, &backid); rewind(stdin);
 
@@ -255,7 +253,11 @@ int modifyStaff() {
 				printf("Cancel modify ----------- 4\n");
 				printf("\nSelect a field to modify: ");
 				scanf(" %d", &selection); rewind(stdin);
-
+				while (selection != 1 && selection != 2 && selection != 3 && selection != 4)
+				{
+					printf("Invalid, please enter again : ");
+					scanf("%d", &selection); rewind(stdin);
+				}
 				switch (selection) {
 				case 1:
 					printf("Enter new name : ");
@@ -268,16 +270,43 @@ int modifyStaff() {
 					rewind(stdin);
 					break;
 				case 3:
-					printf("Enter new password : ");
-					scanf("%s", &staff.pass);
-					rewind(stdin);
+					do {
+						printf("Enter new Password (6 digit number) :");
+						scanf("%s", &staff.pass); rewind(stdin);
+
+						if (strlen(staff.pass) != 6) {
+							printf("Invalid input. Password must be 6 digits.\n");
+							continue;
+						}
+						int i;
+
+						for (i = 0; i < 6; i++) {
+							if (isdigit(staff.pass[i]) == 0) {
+								printf("Invalid input. Password must contain only digits.\n");
+								break;
+							}
+
+
+						}
+						if (i == 6) {
+							valid = 1;
+
+						}
+
+					} while (valid == 0);
+					break;
+				case 4:
+					staffMain();
 					break;
 				default:
 					break;
 				}
 				do {
+					printf("\n\nID             NAME             POSITION         PASSWORD \n");
+					printf("-------------------------------------------------------------\n");
+					printf("%c%-12d  %-15s  %-15s  %-15s\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
 					printf("Need to modify more (Y/N) : ");
-					scanf("%c", &ctn);
+					scanf("%c", &ctn); rewind(stdin);
 				} while (ctn != 'Y' && ctn != 'y' && ctn != 'N' && ctn != 'n');
 			} while (ctn == 'Y' || ctn == 'y');
 			fwrite(&staff, sizeof(staffinfo), 1, stf1);
@@ -334,6 +363,7 @@ int displayStaff() {
 		printf("%c%-12d  %-15s  %-15s  %-15s\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
 	}
 	fclose(stf);
+	
 	system("pause");
 	staffMain();
 }
@@ -350,8 +380,7 @@ int passwordRecovery() {
 		return;
 	}
 
-
-	printf("Enter your staff ID : ");
+	printf("Enter  staff ID :S ");
 	scanf("%c%d", &frontid, &backid); rewind(stdin);
 	printf("Please enter your father name : ");
 	scanf("%[^\n]", passrec);
@@ -394,7 +423,7 @@ int deleteStaff() {
 		printf("Disable open file");
 		exit(-1);
 	}
-
+	
 	printf("Enter Staff ID need to delete : ");
 	scanf("%c%d", &frontid, &backid); rewind(stdin);
 
@@ -404,8 +433,11 @@ int deleteStaff() {
 	{
 		if (backid == staff.backID) {
 			num = 1;
-			printf("Comfirm delete (Y/N) : ");
-			scanf("%c", &ctn); rewind(stdin);
+			do {
+				printf("Comfirm delete (Y/N) : ");
+				scanf("%c", &ctn); rewind(stdin);
+			} while (ctn != 'Y' && ctn != 'N' && ctn != 'y' && ctn != 'n');
+			
 
 			if (ctn == 'N') {
 				return;

@@ -22,7 +22,6 @@ struct Member {
 	int password, backMemberID;
 	Booking booking;
 };
-struct Member member;
 
 
 void memberMain() {
@@ -77,6 +76,8 @@ int memberMenu() {
 }
 
 void addMember() {
+	struct Member member;
+
 	char cont;
 	int id;
 
@@ -121,15 +122,14 @@ void addMember() {
 		// record in file
 		fprintf(fp, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 
-		// record in booking file
-		recordMemberBin(member.backMemberID, member.password);
-
 	} while (cont == 'y' || cont == 'Y');
 
 	fclose(fp);
 }
 
 void searchMember() {
+	struct Member member;
+
 	char frontID, cnt;
 	int backID, found = 0;
 
@@ -150,12 +150,12 @@ void searchMember() {
 		scanf(" %c%d", &frontID, &backID);
 
 		while (!feof(fp)) {
-			fscanf(fp, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
+			fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
 
 			if (frontID == member.frontMemberID && backID == member.backMemberID) {
 				found = 1;
-				printf("%-15s%-15s%-15s%-15s%-15s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
-				printf("%c%-13d %-14s %-14d %-14c %-14s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
+				printf("%-15s%-15s%-15s%-15s%-18s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
+				printf("%c%-13d %-14s %-14d %-14c %-17s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 				rewind(stdin);
 				system("pause");
@@ -165,12 +165,13 @@ void searchMember() {
 
 		if (found == 0) {
 			printf("Member not found!");
-			printf("Do you want to search another (Y to search again):");
-			rewind(stdin);
-			scanf("%c", &cnt);
+			//printf("Do you want to search another (Y to search again):");
+			//rewind(stdin);
+			//scanf("%c", &cnt);
 		}
 
-		printf("\nDo you want to search another (Y to search again):");
+		printf("Do you want to search another (Y to search again):");
+		rewind(stdin);
 		scanf("%c", &cnt);
 
 	} while (cnt == 'y' || cnt == 'Y');
@@ -179,7 +180,7 @@ void searchMember() {
 }
 
 void modifyMember() {
-
+	struct Member member;
 	char frontID, ctn;
 	int backID, found = 0, selection;
 
@@ -276,7 +277,7 @@ void modifyMember() {
 
 
 void displayMember() {
-
+	struct Member member;
 
 	FILE* fp;
 	fp = fopen("member.txt", "r");
@@ -303,6 +304,7 @@ void displayMember() {
 }
 
 void deleteMember() {
+	struct Member member;
 	char frontID, cnt;
 	int backID, found = 0;
 
@@ -345,6 +347,7 @@ void deleteMember() {
 }
 
 void passwordRecoveryMember() {
+	struct Member member;
 	char frontID, cnt, passrecov[30];
 	int backID, found = 0;
 
@@ -371,7 +374,7 @@ void passwordRecoveryMember() {
 		}
 	}
 	
-	if (!found) {
+	if (found == 0) {
 		printf("\nInvalid Member, Please try again.\n");
 	}
 
@@ -380,6 +383,7 @@ void passwordRecoveryMember() {
 }
 
 void memberID(int* id) {
+	struct Member member;
 	FILE* fpt = fopen("member.txt", "r");
 
 	if (fpt == NULL) {
@@ -388,7 +392,7 @@ void memberID(int* id) {
 	}
 
 	while (!feof(fpt)) {
-		fscanf(fpt, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, member.name, &member.password, &member.gender, member.IC, member.contactNumber);
+		fscanf(fpt, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, member.name, &member.password, &member.passRecovery, &member.gender, member.IC, member.contactNumber);
 	}
 
 	*id = member.backMemberID;

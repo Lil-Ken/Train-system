@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #pragma warning (disable:4996)
 
 int memberMenu();
@@ -8,7 +9,7 @@ void searchMember();
 void modifyMember();
 void displayMember();
 void deleteMember();
-void recordMemberBin(int backMemberID);
+void passwordRecoveryMember();
 void memberID(int* id);
 
 typedef struct {
@@ -17,10 +18,11 @@ typedef struct {
 }Booking;
 
 struct Member {
-	char frontMemberID, name[30], passwordrec[10], gender, IC[15], contactNumber[12];
+	char frontMemberID, name[30], gender, IC[17], contactNumber[12], passRecovery[30];
 	int password, backMemberID;
 	Booking booking;
 };
+struct Member member;
 
 
 void memberMain() {
@@ -77,7 +79,6 @@ int memberMenu() {
 void addMember() {
 	char cont;
 	int id;
-	struct Member member;
 
 	memberID(&id);
 	member.backMemberID = id;
@@ -98,12 +99,15 @@ void addMember() {
 		printf("Enter your password:");
 		rewind(stdin);
 		scanf("%d", &member.password);
+		printf("Enter the favorite food that for your Password Recovery: ");
+		rewind(stdin);
+		scanf("%[^\n]", &member.passRecovery);
 		printf("Enter your gender (M/F):");
 		rewind(stdin);
 		scanf("%c", &member.gender);
 		printf("Enter your IC:");
-		rewind(stdin);
 		scanf("%s", &member.IC);
+		rewind(stdin);
 		printf("Enter your contact number:");
 		rewind(stdin);
 		scanf("%s", &member.contactNumber);
@@ -115,7 +119,7 @@ void addMember() {
 		scanf("%c", &cont);
 
 		// record in file
-		fprintf(fp, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
+		fprintf(fp, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 
 		// record in booking file
 		recordMemberBin(member.backMemberID, member.password);
@@ -126,7 +130,6 @@ void addMember() {
 }
 
 void searchMember() {
-	struct Member member;
 	char frontID, cnt;
 	int backID, found = 0;
 
@@ -147,7 +150,7 @@ void searchMember() {
 		scanf(" %c%d", &frontID, &backID);
 
 		while (!feof(fp)) {
-			fscanf(fp, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
+			fscanf(fp, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 
 			if (frontID == member.frontMemberID && backID == member.backMemberID) {
 				found = 1;
@@ -179,7 +182,6 @@ void modifyMember() {
 
 	char frontID, ctn;
 	int backID, found = 0, selection;
-	struct Member member;
 
 	FILE* fp, * fp1;
 	fp = fopen("member.txt", "r");
@@ -197,7 +199,7 @@ void modifyMember() {
 	scanf(" %c%d", &frontID, &backID);
 
 	while (!feof(fp)) {
-		fscanf(fp, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
+		fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
 		if (frontID == 'M' && backID == member.backMemberID) {
 			found = 1;
 			// loop for modify more data
@@ -250,10 +252,10 @@ void modifyMember() {
 				printf("Modify more (Y/N): ");
 				scanf(" %c", &ctn);
 			} while (ctn == 'Y' || ctn == 'y');
-			fprintf(fp1, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
+			fprintf(fp1, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 		}
 		else {
-			fprintf(fp1, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
+			fprintf(fp1, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 		}
 
 	}
@@ -264,8 +266,8 @@ void modifyMember() {
 	fp1 = fopen("memberModify.txt", "r");
 
 	while (!feof(fp1)) {
-		fscanf(fp1, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
-		fprintf(fp, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
+		fscanf(fp1, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
+		fprintf(fp, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 	}
 
 	fclose(fp);
@@ -275,7 +277,6 @@ void modifyMember() {
 
 void displayMember() {
 
-	struct Member member;
 
 	FILE* fp;
 	fp = fopen("member.txt", "r");
@@ -286,12 +287,12 @@ void displayMember() {
 		return;
 	}
 
-	printf("%-15s%-15s%-15s%-15s%-15s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
+	printf("%-15s%-15s%-15s%-15s%-18s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
 
 
 	while (!feof(fp)) {
-		fscanf(fp, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n] \n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
-		printf("%c%-13d %-14s %-14d %-14c %-14s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
+		fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
+		printf("%c%-13d %-14s %-14d %-14c %-17s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 	}
 
@@ -304,7 +305,6 @@ void displayMember() {
 void deleteMember() {
 	char frontID, cnt;
 	int backID, found = 0;
-	struct Member member;
 
 	FILE* fp, * fp1;
 	fp = fopen("member.txt", "r");
@@ -321,13 +321,13 @@ void deleteMember() {
 	printf("Enter the Member ID to delete: ");
 	scanf(" %c%d", &frontID, &backID);
 
-	while (fscanf(fp, "%c%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, member.name, &member.password, &member.gender, member.IC, member.contactNumber) != EOF) {
+	while (fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber) != EOF) {
 		if (frontID == member.frontMemberID && backID == member.backMemberID) {
 			found = 1;
 			printf("Member found and deleted.\n");
 		}
 		else {
-			fprintf(fp1, "%c%d | %s | %d | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
+			fprintf(fp1, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 		}
 	}
 
@@ -336,7 +336,7 @@ void deleteMember() {
 
 	if (!found) {
 		printf("Member not found.\n");
-		remove("new.txt"); 
+		remove("new.txt");
 	}
 	else {
 		remove("member.txt"); 
@@ -344,10 +344,42 @@ void deleteMember() {
 	}
 }
 
+void passwordRecoveryMember() {
+	char frontID, cnt, passrecov[30];
+	int backID, found = 0;
 
+	FILE* fp;
+	fp = fopen("member.txt", "r");
+
+	if (fp == NULL ) {
+		printf("Unable to open files for deletion.\n");
+		return;
+	}
+	printf("Please enter your member ID:");
+	scanf(" %c%d", &frontID, &backID);
+	rewind(stdin);
+
+	printf("\nEnter the favorite food that you like:");
+	//gets(passrecov);
+	scanf("%[^\n]", &passrecov);
+	rewind(stdin);
+
+	while (fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber) != EOF) {
+		if (frontID == member.frontMemberID && backID == member.backMemberID && strcmp(passrecov, member.passRecovery)  == 0){
+			found = 1;
+			printf("This is your password : %s.\n", member.password);
+		}
+	}
+	
+	if (!found) {
+		printf("\nInvalid Member, Please try again.\n");
+	}
+
+	fclose(fp);
+
+}
 
 void memberID(int* id) {
-	struct Member member;
 	FILE* fpt = fopen("member.txt", "r");
 
 	if (fpt == NULL) {

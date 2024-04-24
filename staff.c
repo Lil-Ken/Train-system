@@ -385,8 +385,8 @@ int passwordRecovery() {
 		return;
 	}
 
-	printf("Enter  staff ID :");
-	scanf("%c%d", &frontid, &backid); rewind(stdin);
+	printf("Enter your staff ID :S");
+	scanf("%d", &backid); rewind(stdin);
 	printf("Please enter your father name : ");
 	scanf("%[^\n]", passrec);
 

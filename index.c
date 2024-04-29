@@ -33,19 +33,14 @@ typedef struct {
 
 typedef struct {
 	int trainID;
-	Seat seats[10];
-	struct Date departureDate;
-}BookingTrain;
-
-typedef struct {
-	int trainID;
 	char departureStation[50], arrivalStation[50];
 	struct Date departureDate;
 	struct Date arrivalDate;
 	struct Time departureTime;
 	struct Time arrivalTime;
-	int availableSeats;
+	int availableSeats; // number of available seats
 	float ticketPrice;
+	Seat seats[10]; // booked seat
 } TrainSchedule;
 
 typedef struct {
@@ -53,7 +48,7 @@ typedef struct {
 	struct Date bookingDate;
 	int quantity, bookingID;
 	double amount;
-	BookingTrain trains;
+	TrainSchedule trains;
 }Booking;
 
 typedef struct {
@@ -1752,9 +1747,9 @@ void scheduleReport() {
 	}
 }
 
+
 // Booking
 // quantity and seat number
-// report based on month
 
 Member member;
 Member memberTemp;
@@ -2091,14 +2086,13 @@ void searchBooking(char mode[]) {
 				printf("=");
 			printf("\n");
 			printf("%-15s", "Train ID");
-			printf("%-16s%-15s", "Seat Number", "Coach");
-			printf("%-15s%-15s%-15s%-16s%-16s%-16s\n", "Payment Info", "Ticket Status", "Booking Date", "Departure Date", "Quantity", "Amount");
+			printf("%-15s%-15s", "Seat Number", "Coach");
+			printf("%-15s%-15s%-15s%-15s%-15s%-15s\n", "Payment Info", "Ticket Status", "Booking Date", "Departure Date", "Quantity", "Amount");
 			for (int i = 0; i < 135; i++)
 				printf("=");
 			printf("\n");
 
 			printf("\n%-15d", memberTemp.book[cnt].trains.trainID);
-
 
 			// seat and coach based on quantity
 			// seat
@@ -2156,13 +2150,12 @@ void searchBooking(char mode[]) {
 				else break;
 			}
 
-
 			printf("%-15s%-15s", memberTemp.book[cnt].paymentInfo,
 				memberTemp.book[cnt].ticketStatus);
-			printf("%02d/%02d/%04d     %02d/%02d/%04d      ", memberTemp.book[cnt].bookingDate.day, memberTemp.book[cnt].bookingDate.month,
+			printf("%02d/%02d/%04d     %02d/%02d/%04d     ", memberTemp.book[cnt].bookingDate.day, memberTemp.book[cnt].bookingDate.month,
 				memberTemp.book[cnt].bookingDate.year, memberTemp.book[cnt].trains.departureDate.day, memberTemp.book[cnt].trains.departureDate.month,
 				memberTemp.book[cnt].trains.departureDate.year);
-			printf("%-16d%-16.2f\n", memberTemp.book[cnt].quantity, memberTemp.book[cnt].amount);
+			printf("%-15d%-15.2f\n", memberTemp.book[cnt].quantity, memberTemp.book[cnt].amount);
 
 
 			if (memberTemp.book[cnt].quantity > 3) {
@@ -3125,7 +3118,7 @@ void displaySeat(int trainID) {
 			if (valid == 1) {
 				int bookingNum = 0;
 				rewind(fp);
-				while (fread(&memberTemp.book[bookingNum].trains, sizeof(BookingTrain), 1, fp) == 1) {
+				while (fread(&memberTemp.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp) == 1) {
 					for (int count = 0; count < (sizeof(memberTemp.book[bookingNum].trains.seats) / sizeof(memberTemp.book[bookingNum].trains.seats[0])); count++) {
 						// if train id correct
 						if (trainID == memberTemp.book[bookingNum].trains.trainID && memberTemp.book[bookingNum].trains.seats[count].coach == coach) {
@@ -3205,9 +3198,9 @@ bool seat(int bookingNum, int count, int write) {
 	}
 
 	// if no record, then direct wirte data into file
-	if (fread(&memberTemp.book[bookingNum].trains, sizeof(BookingTrain), 1, fp) == 0) {
+	if (fread(&memberTemp.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp) == 0) {
 		if (write == 1) {
-			fwrite(&member.book[bookingNum].trains, sizeof(BookingTrain), 1, fp2);
+			fwrite(&member.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp2);
 			fclose(fp2);
 			return true;
 		}
@@ -3217,7 +3210,7 @@ bool seat(int bookingNum, int count, int write) {
 	if (write == 0) {
 		// compare all data (seat availability)
 		fseek(fp, 0, SEEK_SET);
-		while (fread(&memberTemp.book[bookingNum].trains, sizeof(BookingTrain), 1, fp) == 1) {
+		while (fread(&memberTemp.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp) == 1) {
 			// compare train id
 			if (member.book[bookingNum].trains.trainID == memberTemp.book[bookingNum].trains.trainID) {
 				// compare seat number and coach
@@ -3235,7 +3228,7 @@ bool seat(int bookingNum, int count, int write) {
 
 	if (write == 1) {
 		// write data into file
-		fwrite(&member.book[bookingNum].trains, sizeof(BookingTrain), 1, fp2);
+		fwrite(&member.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp2);
 		fclose(fp);
 		fclose(fp2);
 		return true;

@@ -1,6 +1,8 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<stdbool.h>
+#include<ctype.h>
 #pragma warning (disable:4996)
 
 int memberMenu();
@@ -11,6 +13,20 @@ void displayMember();
 void deleteMember();
 void passwordRecoveryMember();
 void memberID(int* id);
+void rewardPointVoucher(double quantity, int* point);
+bool loginStaffMem();
+int validateName(const char* name);
+int validatePassword(int password);
+int validateGender(char gender);
+int validateIC(const char* IC);
+int validateContactNumber(const char* contactNumber);
+int validatePassRec(const char* passRec);
+
+typedef struct {
+	char  name[51], frontID, position[51], fatherName[51], pass[7];
+	int  backID;
+
+}staffinfo;
 
 typedef struct {
 	char bookingId[10], trainID[10];
@@ -23,8 +39,12 @@ struct Member {
 	Booking booking;
 };
 
+staffinfo staffs;
 
 void memberMain() {
+
+	loginStaffMem();
+
 	int mode;
 	mode = memberMenu();
 	switch (mode) {
@@ -43,6 +63,8 @@ void memberMain() {
 	case 5:
 		deleteMember();
 		break;
+	case 6:
+		main();
 	default:
 		break;
 	}
@@ -77,7 +99,6 @@ int memberMenu() {
 
 void addMember() {
 	struct Member member;
-
 	char cont;
 	int id;
 
@@ -97,35 +118,78 @@ void addMember() {
 		printf("Enter your Name:");
 		rewind(stdin);
 		scanf("%[^\n]", &member.name);
+		while (!validateName(member.name)) {
+			printf("Invalid name format. Name must contain only alphabetic characters and spaces.\n");
+			printf("Enter your Name:");
+			rewind(stdin);
+			scanf("%[^\n]", &member.name);
+		}
+
 		printf("Enter your password:");
 		rewind(stdin);
 		scanf("%d", &member.password);
-		printf("Enter the favorite food that for your Password Recovery: ");
+		while (!validatePassword(member.password)) {
+			printf("Invalid password format. Password must be a positive integer.\n");
+			printf("Enter your password:");
+			rewind(stdin);
+			scanf("%d", &member.password);
+		}
+
+		printf("Enter the favorite food for your Password Recovery: ");
 		rewind(stdin);
 		scanf("%[^\n]", &member.passRecovery);
+		while (!validatePassRec(member.passRecovery)) {
+			printf("Invalid format. Password Recovery must contain only alphabetic characters and spaces.\n");
+			printf("Enter the favorite food for your Password Recovery: ");
+			rewind(stdin);
+			scanf("%[^\n]", &member.passRecovery);
+		}
+
 		printf("Enter your gender (M/F):");
 		rewind(stdin);
 		scanf("%c", &member.gender);
+		while (!validateGender(member.gender)) {
+			printf("Invalid gender input. Please enter 'M' for male or 'F' for female.\n");
+			printf("Enter your gender (M/F):");
+			rewind(stdin);
+			scanf("%c", &member.gender);
+		}
+
 		printf("Enter your IC:");
 		scanf("%s", &member.IC);
 		rewind(stdin);
+		while (!validateIC(member.IC)) {
+			printf("Invalid IC format. IC must be 14 characters long.\n");
+			printf("Enter your IC:");
+			scanf("%s", &member.IC);
+			rewind(stdin);
+		}
+
 		printf("Enter your contact number:");
 		rewind(stdin);
 		scanf("%s", &member.contactNumber);
+		while (!validateContactNumber(member.contactNumber)) {
+			printf("Invalid contact number format. Contact number must be 11 digits long.\n");
+			printf("Enter your contact number:");
+			rewind(stdin);
+			scanf("%s", &member.contactNumber);
+		}
 
-		printf("Success to create a account!!!\nYour Member ID: %c%d\n\n", member.frontMemberID, member.backMemberID);
+		printf("Success to create an account!!!\nYour Member ID: %c%d\n\n", member.frontMemberID, member.backMemberID);
 
 		printf("Do you want to add more (Y to add more): ");
 		rewind(stdin);
 		scanf("%c", &cont);
 
 		// record in file
-		fprintf(fp, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
+		fprintf(fp, "%c%d | %s | %d | %s| %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 
 	} while (cont == 'y' || cont == 'Y');
 
 	fclose(fp);
 }
+
+
 
 void searchMember() {
 	struct Member member;
@@ -141,11 +205,10 @@ void searchMember() {
 
 	if (fp == NULL) {
 		printf("Unable to open file!\n");
-		system("pause");
 		return;
 	}
 
-	do {
+	
 		printf("Enter the Member ID:");
 		scanf(" %c%d", &frontID, &backID);
 
@@ -156,25 +219,18 @@ void searchMember() {
 				found = 1;
 				printf("%-15s%-15s%-15s%-15s%-18s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
 				printf("%c%-13d %-14s %-14d %-14c %-17s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
-
-				rewind(stdin);
+				
 				system("pause");
-				break;
+				memberMain();
 			}
 		}
 
-		if (found == 0) {
-			printf("Member not found!");
-			//printf("Do you want to search another (Y to search again):");
-			//rewind(stdin);
-			//scanf("%c", &cnt);
+		if (!found) {
+			printf("Member not found!\n");
+			system("pause");
+			memberMain();
 		}
 
-		printf("Do you want to search another (Y to search again):");
-		rewind(stdin);
-		scanf("%c", &cnt);
-
-	} while (cnt == 'y' || cnt == 'Y');
 
 	fclose(fp);
 }
@@ -223,26 +279,56 @@ void modifyMember() {
 					printf("Enter the new name:");
 					scanf("%s", member.name);
 					rewind(stdin);
+					while (!validateName(member.name)) {
+						printf("Invalid name format. Name must contain only alphabetic characters and spaces.\n");
+						printf("Enter your Name:");
+						rewind(stdin);
+						scanf("%[^\n]", &member.name);
+					}
 					break;
 				case 2:
 					printf("Enter the new password:");
 					scanf("%d", &member.password);
 					rewind(stdin);
+					while (!validatePassword(member.password)) {
+						printf("Invalid password format. Password must be a positive integer.\n");
+						printf("Enter your password:");
+						rewind(stdin);
+						scanf("%d", &member.password);
+					}
 					break;
 				case 3:
 					printf("Enter the new gender:");
 					scanf("%c", &member.gender);
 					rewind(stdin);
+					while (!validateGender(member.gender)) {
+						printf("Invalid gender input. Please enter 'M' for male or 'F' for female.\n");
+						printf("Enter your gender (M/F):");
+						rewind(stdin);
+						scanf("%c", &member.gender);
+					}
 					break;
 				case 4:
 					printf("Enter the new IC:");
 					scanf("%s", member.IC);
 					rewind(stdin);
+					while (!validateIC(member.IC)) {
+						printf("Invalid IC format. IC must be 14 characters long.\n");
+						printf("Enter your IC:");
+						scanf("%s", &member.IC);
+						rewind(stdin);
+					}
 					break;
 				case 5:
 					printf("Enter the new contact number:");
 					scanf("%s", member.contactNumber);
 					rewind(stdin);
+					while (!validateContactNumber(member.contactNumber)) {
+						printf("Invalid contact number format. Contact number must be 11 digits long.\n");
+						printf("Enter your contact number:");
+						rewind(stdin);
+						scanf("%s", &member.contactNumber);
+					}
 				default:
 					break;
 				}
@@ -253,26 +339,19 @@ void modifyMember() {
 				printf("Modify more (Y/N): ");
 				scanf(" %c", &ctn);
 			} while (ctn == 'Y' || ctn == 'y');
-			fprintf(fp1, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
+			fprintf(fp1, "%c%d | %s | %d | %s| %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 		}
 		else {
-			fprintf(fp1, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
+			fprintf(fp1, "%c%d | %s | %d | %s| %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 		}
 
 	}
 	fclose(fp);
 	fclose(fp1);
+	
+	remove("member.txt");
+	rename("memberModify.txt", "member.txt");
 
-	fp = fopen("member.txt", "w");
-	fp1 = fopen("memberModify.txt", "r");
-
-	while (!feof(fp1)) {
-		fscanf(fp1, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
-		fprintf(fp, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
-	}
-
-	fclose(fp);
-	fclose(fp1);
 }
 
 
@@ -296,8 +375,6 @@ void displayMember() {
 		printf("%c%-13d %-14s %-14d %-14c %-17s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 	}
-
-
 
 	fclose(fp);
 
@@ -329,7 +406,7 @@ void deleteMember() {
 			printf("Member found and deleted.\n");
 		}
 		else {
-			fprintf(fp1, "%c%d | %s | %d | %s | %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
+			fprintf(fp1, "%c%d | %s | %d | %s| %c | %s | %s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.passRecovery, member.gender, member.IC, member.contactNumber);
 		}
 	}
 
@@ -363,14 +440,13 @@ void passwordRecoveryMember() {
 	rewind(stdin);
 
 	printf("\nEnter the favorite food that you like:");
-	//gets(passrecov);
 	scanf("%[^\n]", &passrecov);
 	rewind(stdin);
 
 	while (fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber) != EOF) {
 		if (frontID == member.frontMemberID && backID == member.backMemberID && strcmp(passrecov, member.passRecovery)  == 0){
 			found = 1;
-			printf("This is your password : %s.\n", member.password);
+			printf("This is your password : %d.\n", member.password);
 		}
 	}
 	
@@ -380,6 +456,84 @@ void passwordRecoveryMember() {
 
 	fclose(fp);
 
+}
+
+bool loginStaffMem() {
+	char contn = ' ', pass[7];
+	int staffID, found = 0;
+
+	// open staff binary file for reading
+	FILE* fp;
+	fp = fopen("staff.bin", "rb");
+
+	if (fp == NULL) {
+		printf("Staff record not found!\n");
+		printf("Enter Any Key to continue...");
+		rewind(stdin);
+		while (getc(stdin) != '\n');
+		return false;
+	}
+
+	do {
+		system("cls");
+		do
+		{
+			printf("Enter your Staff ID: S");
+			scanf(" %d", &staffID);
+			rewind(stdin);
+			if (!(staffID > 1000 && staffID < 10000)) {
+				printf("Invalid Staff ID!\n\n");
+			}
+		} while (!(staffID > 1000 && staffID < 10000));
+
+
+		printf("Enter your password");
+		if (found != 1) {
+			printf(" (Enter 0 if forgot password): ");
+		}
+		else printf(": ");
+		scanf("%s", pass);
+		rewind(stdin);
+		if (strcmp(pass, "0") == 0) {
+			if (found == 1) {
+				printf("Request password operation too frequent, please retry later\n\n");
+				continue;
+			}
+			found = 1;
+			passwordRecovery(staffID);
+			printf("\n");
+			continue;
+		}
+
+
+		// read all records
+		rewind(fp);
+		while (fread(&staffs, sizeof(staffinfo), 1, fp) == 1) {
+			if (staffID == staffs.backID && strcmp(pass, staffs.pass) == 0) {
+				printf("Successful login!\n");
+				printf("Enter Any Key to continue...");
+				rewind(stdin);
+				while (getc(stdin) != '\n');
+				fclose(fp);
+				return true;
+			}
+		}
+
+		do {
+			printf("\n*** Invalid STAFF ID or PASSWORD ***\n");
+			printf("[Y] Retry\n");
+			printf("[N] Back to Menu\n");
+			printf("Enter Your Selection: ");
+			scanf(" %c", &contn);
+			rewind(stdin);
+			if (contn == 'N' || contn == 'n') {
+				fclose(fp);
+				return false;
+			}
+		} while (!(contn == 'Y' || contn == 'y'));
+	} while (1);
+	fclose(fp);
+	return false;
 }
 
 void memberID(int* id) {
@@ -399,4 +553,60 @@ void memberID(int* id) {
 
 
 	fclose(fpt);
+}
+
+int validateName(const char* name) {
+	// Name must be non-empty and contain only alphabetic characters
+	int length = strlen(name);
+	if (length == 0)
+		return 0; // False
+	for (int i = 0; i < length; ++i) {
+		if (!isalpha(name[i]) && !isspace(name[i]))
+			return 0; // False
+	}
+	return 1; // True
+}
+
+int validatePassRec(const char* passRec) {
+	/* Name must be non-empty and contain only alphabetic characters*/
+	int length = strlen(passRec);
+	if (length == 0)
+		return 0; // False
+	for (int i = 0; i < length; ++i) {
+		if (!isalpha(passRec[i]) && !isspace(passRec[i]))
+			return 0; // False
+	}
+	return 1; // True
+}
+
+int validatePassword(int password) {
+	// Password must be a positive integer
+	if (password >= 0)
+		return 1; // True
+	else
+		return 0; // False
+}
+
+int validateGender(char gender) {
+	// Gender must be 'M' or 'F'
+	if (toupper(gender) == 'M' || toupper(gender) == 'F')
+		return 1; // True
+	else
+		return 0; // False
+}
+
+int validateIC(const char* IC) {
+	// IC must be 12 characters long
+	if (strlen(IC) == 14)
+		return 1; // True
+	else
+		return 0; // False
+}
+
+int validateContactNumber(const char* contactNumber) {
+	// Contact number must be 10 digits long
+	if (strlen(contactNumber) == 11)
+		return 1; // True
+	else
+		return 0; // False
 }

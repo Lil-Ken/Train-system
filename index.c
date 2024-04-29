@@ -206,6 +206,7 @@ int menu() {
 
 
 // Staff
+staffinfo staff;
 void staffMain() {
 	int mode;
 	mode = staffMenu();
@@ -264,7 +265,7 @@ int staffMenu() {
 
 
 int addStaff() {
-	staffinfo staff;
+	
 	int exit, passrec, valid = 0;
 	staff.frontID = 'S';
 
@@ -366,7 +367,7 @@ int addStaff() {
 int searchStaff() {
 	char frontid;
 	int backid, num = 0;
-	staffinfo staff;
+	
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -406,7 +407,7 @@ int searchStaff() {
 
 
 int modifyStaff() {
-	staffinfo staff;
+	
 	char frontid, ctn;
 	int backid, selection, num = 0, valid = 0;
 
@@ -533,7 +534,7 @@ int modifyStaff() {
 
 
 int displayStaff() {
-	staffinfo staff;
+	
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -555,7 +556,7 @@ int displayStaff() {
 }
 
 int passwordRecovery(int id) {
-	staffinfo staff;
+	
 	int num1 = 0;
 	char frontid, passrec[51];
 	FILE* stf;
@@ -599,7 +600,7 @@ int passwordRecovery(int id) {
 }
 
 int deleteStaff() {
-	staffinfo staff;
+	
 	int backid, num = 0;
 	char frontid, ctn;
 
@@ -674,7 +675,7 @@ int deleteStaff() {
 
 
 int staffid() {
-	staffinfo staff;
+	
 
 	int num = 0;
 	int num2;
@@ -735,10 +736,10 @@ int staffid() {
 }
 
 int staffPayslip() {
-	staffinfo staff;
+	
 	int backid, ot, othour = 0, num = 0;
 	char frontid;
-	double basic, allowance = 600.00, epf, socso, eis;
+	double  basic, allowance = 600.00, epf, socso, eis;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -755,13 +756,13 @@ int staffPayslip() {
 
 		if (backid == staff.backID) {
 			num = 1;
-			do {
+			
 				do {
 					printf("Please enter your basic pay : "); rewind(stdin);
 					scanf("%lf", &basic);
 				} while (basic < 0 || basic>10000000000000);
-
-			} while (isdigit(basic) != 0);
+				
+			
 
 
 			do {
@@ -778,6 +779,7 @@ int staffPayslip() {
 				} while (othour < 0 || othour>10000);
 
 			}
+			
 			epf = basic * 0.11;
 			socso = basic * 0.05;
 			eis = basic * 0.02;
@@ -803,18 +805,18 @@ int staffPayslip() {
 
 			printf("                _______________________________________________________________________________\n");
 			printf("                |Earning/income                        |DETUCTION                             |\n");
-			printf("                |||\n");
+			printf("                |______________________________________|______________________________________|\n");
 			printf("                |BASIC PAY:%28.2f|EMPLOYEE EPF:%25.2f|\n", basic, epf);
 			printf("                |NORMAL OT:%28.2f|EMPLOYEE SOCSO:%23.2f|\n", othour, socso);
 			printf("                |FIXED ALLOWANCE:%22.2f|EMPLOYEE EIS:%25.2f|\n", allowance, eis);
 			printf("                |                                      |                                      |\n");
 			printf("                |                                      |                                      |\n");
 			printf("                |                                      |                                      |\n");
-			printf("                |||\n");
+			printf("                |______________________________________|______________________________________|\n");
 			printf("                |GROSS PAY:%28.2f|TOTAL DETUCTION:%22.2f|\n", basic + othour + allowance, epf + socso + eis);
-			printf("                |||\n");
+			printf("                |______________________________________|______________________________________|\n");
 			printf("                |                                      |NETT PAY:%29.2f|\n", basic + othour + allowance - epf - socso - eis);
-			printf("                |||\n");
+			printf("                |______________________________________|______________________________________|\n");
 
 			system("pause");
 

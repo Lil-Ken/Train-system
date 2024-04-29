@@ -559,54 +559,54 @@ int validateName(const char* name) {
 	// Name must be non-empty and contain only alphabetic characters
 	int length = strlen(name);
 	if (length == 0)
-		return 0; // False
+		return 0; 
 	for (int i = 0; i < length; ++i) {
 		if (!isalpha(name[i]) && !isspace(name[i]))
-			return 0; // False
+			return 0; 
 	}
-	return 1; // True
+	return 1; 
 }
 
 int validatePassRec(const char* passRec) {
 	/* Name must be non-empty and contain only alphabetic characters*/
 	int length = strlen(passRec);
 	if (length == 0)
-		return 0; // False
+		return 0; 
 	for (int i = 0; i < length; ++i) {
 		if (!isalpha(passRec[i]) && !isspace(passRec[i]))
-			return 0; // False
+			return 0; 
 	}
-	return 1; // True
+	return 1; 
 }
 
 int validatePassword(int password) {
 	// Password must be a positive integer
 	if (password >= 0)
-		return 1; // True
+		return 1; 
 	else
-		return 0; // False
+		return 0; 
 }
 
 int validateGender(char gender) {
 	// Gender must be 'M' or 'F'
 	if (toupper(gender) == 'M' || toupper(gender) == 'F')
-		return 1; // True
+		return 1; 
 	else
-		return 0; // False
+		return 0; 
 }
 
 int validateIC(const char* IC) {
 	// IC must be 12 characters long
 	if (strlen(IC) == 14)
-		return 1; // True
+		return 1;
 	else
-		return 0; // False
+		return 0; 
 }
 
 int validateContactNumber(const char* contactNumber) {
 	// Contact number must be 10 digits long
 	if (strlen(contactNumber) == 11)
-		return 1; // True
+		return 1; 
 	else
-		return 0; // False
+		return 0;
 }

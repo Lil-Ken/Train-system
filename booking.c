@@ -113,23 +113,23 @@ void deleteBooking();
 void summaryReport();
 bool loginMember(int* ID);
 bool loginStaff();
-bool schedulingData(int* trainID, char purpose[], int bookingNum);
+bool schedulingData(int trainID, char purpose[], int bookingNum, double *price);
 void paymentMethod(int bookingNum);
 int bookingID_Num(int* id);
 void displaySeat(int trainID);
-bool seat(int bookingNum, int count, int write);
+bool seat(int bookingNum, int count, int mode);
+void modifySeat(int mode, int bookingNum, int count, bool* valid);
 void bookingLogo();
-
-// quantity and seat number
 
 Member member;
 Member memberTemp;
 Member memberTemp2;
 staffinfo staffs;
+TrainSchedule schedule = { 0 };
 struct Date availableSeat[MAX_BOOKING_DAYS];
 
 void bookingMain() {
-	int mode, loginMode;
+	int mode, loginMode, trainID;
 	bookingMenu(&loginMode);
 
 	// staff mode
@@ -151,6 +151,28 @@ void bookingMain() {
 				deleteBooking();
 				break;
 			case 4:
+				do{
+					system("cls");
+					printf("Enter Train ID that you want to view seats (Enter 0 to view train schedule): T");
+					scanf("%d", &trainID);
+					rewind(stdin);
+
+					if (trainID <= 1000 || trainID >= 10000){
+						continue;
+					}
+
+					// display train information
+					if (trainID == 0) {
+						schedulingData(trainID, "display", 0, 0);
+						printf("\n");
+						continue;
+					}
+				} while (1);
+
+				system("cls");
+				displaySeat(trainID);
+				break;
+			case 5:
 				summaryReport();
 				break;
 			default:
@@ -217,15 +239,16 @@ void bookingMenuStaff(int* mode) {
 		system("cls");
 		bookingLogo();
 
-		printf("***************************************\n");
-		printf("       Welcome Back, Staff S%d\n", staffs.backID);
-		printf("***************************************\n\n");
-		printf("View All Booking Records ------------ 1\n");
-		printf("Search a Booking Record  ------------ 2\n");
-		printf("Delete a Booking Record ------------- 3\n");
-		printf("View Booking Summary Report --------- 4\n");
-		printf("Back to Main Menu ------------------- 5\n\n");
-		printf("Enter Number ------------------------ ");
+		printf("*******************************************\n");
+		printf("         Welcome Back, Staff S%d\n", staffs.backID);
+		printf("*******************************************\n\n");
+		printf("View All Booking Records ---------------- 1\n");
+		printf("Search a Booking Record  ---------------- 2\n");
+		printf("Delete a Booking Record ----------------- 3\n");
+		printf("View Seats ------------------------------ 4\n");
+		printf("View Booking Summary Report ------------- 5\n");
+		printf("Back to Main Menu ----------------------- 6\n\n");
+		printf("Enter Number ---------------------------- ");
 		scanf(" %d", mode);
 		rewind(stdin);
 	} while (*mode != 1 && *mode != 2 && *mode != 3 && *mode != 4 && *mode != 5);
@@ -236,16 +259,16 @@ void bookingMenuMember(int *mode) {
 		system("cls");
 		bookingLogo();
 
-		printf("***********************************\n");
-		printf("     Welcome Back, Member M%d\n", member.backMemberID);
-		printf("***********************************\n\n");
-		printf("Add a Booking ------------------- 1\n");
-		printf("Search a Booking ---------------- 2\n");
-		printf("Modify Booking Details ---------- 3\n");
-		printf("View Booking Details ------------ 4\n");
-		printf("Cancel a Booking ---------------- 5\n");
-		printf("Back to Main Menu --------------- 6\n\n");
-		printf("Enter Number -------------------- ");
+		printf("********************************************\n");
+		printf("         Welcome Back, Member M%d\n", member.backMemberID);
+		printf("********************************************\n\n");
+		printf("Add a Booking ---------------------------- 1\n");
+		printf("Search a Booking ------------------------- 2\n");
+		printf("Modify Booking Details ------------------- 3\n");
+		printf("View Booking Details --------------------- 4\n");
+		printf("Cancel a Booking ------------------------- 5\n");
+		printf("Back to Main Menu ------------------------ 6\n\n");
+		printf("Enter Number ----------------------------- ");
 		scanf(" %d", mode);
 		rewind(stdin);
 	} while (*mode != 1 && *mode != 2 && *mode != 3 && *mode != 4 && *mode != 5 && *mode != 6);
@@ -255,6 +278,7 @@ void bookingMenuMember(int *mode) {
 void addBooking() {
 	char confirm;
 	int id, bookingNum, found = 0;
+	double price;
 	bool valid;
 	FILE* fp = fopen("Booking.bin", "ab");
 
@@ -299,13 +323,13 @@ void addBooking() {
 		// display train information
 		if (member.book[bookingNum].trains.trainID == 0 && found != 1){
 			found = 1;
-			valid = schedulingData(&member.book[bookingNum].trains.trainID, "display", bookingNum);
+			valid = schedulingData(member.book[bookingNum].trains.trainID, "display", bookingNum, &price);
 			printf("\n");
 			continue;
 		}
 		// validate train ID
 		else if (member.book[bookingNum].trains.trainID > 1000 || member.book[bookingNum].trains.trainID < 10000){
-			valid = schedulingData(&member.book[bookingNum].trains.trainID, "validate", bookingNum);
+			valid = schedulingData(member.book[bookingNum].trains.trainID, "validate", bookingNum, &price);
 		}
 
 		if (valid) {
@@ -400,7 +424,7 @@ void addBooking() {
 				break;
 			}
 			else {
-				printf("\nSeat at %s has been booked.\nEnter again!\n", member.book[bookingNum].trains.seats[i].seatNumber);
+				printf("\nSeat at %s, Coach %c has been booked.\nEnter again!\n", member.book[bookingNum].trains.seats[i].seatNumber, member.book[bookingNum].trains.seats[i].coach);
 				continue;
 			}
 
@@ -440,8 +464,6 @@ void addBooking() {
 void searchBooking(char mode[]) {
 	int backBookingID, cnt = 0;
 	system("cls");
-	printf("Enter Booking ID to search: B");
-	scanf(" %d", &backBookingID);
 
 	FILE* fp;
 	fp = fopen("Booking.bin", "rb");
@@ -453,36 +475,40 @@ void searchBooking(char mode[]) {
 		while (getc(stdin) != '\n');
 		return;
 	}
+
+	printf("Enter Booking ID to search: B");
+	scanf(" %d", &backBookingID);
 	
 	// read all data in the file
 	while (fread(&memberTemp.backMemberID, sizeof(int), 1, fp) == 1 &&
 		   fread(&memberTemp.book[cnt], sizeof(Booking), 1, fp) == 1) {
 
-		if (member.backMemberID != memberTemp.backMemberID &&
-			strcmp(mode, "member") == 0) continue;
-
 		// check whether booking id and member ID are correct or not
 		if (memberTemp.book[cnt].bookingID == backBookingID) {
 
 			printf("\n");
+			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 15; i++) printf("=");
 			for (int i = 0; i < 135; i++)
 				printf("=");
 			printf("\n");
+			if (strcmp(mode, "staff") == 0) printf("%-15s", "Member ID");
 			printf("%-15s", "Train ID");
 			printf("%-16s%-15s", "Seat Number", "Coach");
 			printf("%-15s%-15s%-15s%-16s%-16s%-16s\n", "Payment Info", "Ticket Status", "Booking Date", "Departure Date", "Quantity", "Amount");
+			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 15; i++) printf("=");
 			for (int i = 0; i < 135; i++)
 				printf("=");
 			printf("\n");
 
-			printf("\n%-15d", memberTemp.book[cnt].trains.trainID);
+			if (strcmp(mode, "staff") == 0) printf("\n%c%-14d", MEMBER_FRONT_ID, memberTemp.backMemberID);
 
+			printf("%-15d", memberTemp.book[cnt].trains.trainID);
 
 			// seat and coach based on quantity
 			// seat
 			for (int i = 0; i < memberTemp.book[cnt].quantity; i++) {
 				if (i < 3) {
-					if (memberTemp.book[cnt].quantity > 3) {
+					if (memberTemp.book[cnt].quantity >= 3) {
 						if (i != 2) {
 							printf("%s, ", memberTemp.book[cnt].trains.seats[i].seatNumber);
 						}
@@ -686,10 +712,12 @@ void searchBooking(char mode[]) {
 
 void modifyBooking() {
 	int selection, backBookingID, cnt = 0, found = 0, oriQuantity;
+	bool valid = false;
 
 	FILE* fp = fopen("Booking.bin", "rb");
 	FILE* fp2 = fopen("Booking_Modify.bin", "wb");
 
+	system("cls");
 
 	if (fp == NULL || fp2 == NULL) {
 		printf("NO booking record!\n");
@@ -713,32 +741,93 @@ void modifyBooking() {
 		if (memberTemp.book[cnt].bookingID == backBookingID &&
 			member.backMemberID == memberTemp.backMemberID) {
 			found = 1;
-
 			// loop for modify more data
 			do {
 				// loop for validation
 				do {
-					printf("\nSeat -------------------- 1\n");
-					printf("Coach ------------------- 2\n");
-					printf("Quantity ---------------- 3\n");
-					printf("Cancel modify ----------- 4\n");
+					printf("\nSeat number & Coach ---------- 1\n");
+					printf("Quantity --------------------- 2\n");
+					printf("Cancel modify ---------------- 3\n");
 					printf("\nSelect a field to modify: ");
 					scanf(" %d", &selection);
 					rewind(stdin);
-				} while (!(selection == 1 || selection == 2 || selection == 3 || selection == 4));
+				} while (!(selection == 1 || selection == 2 || selection == 3));
 
 				switch (selection) {
 				case 1:
-					//printf("Enter seat number: ");
-					//scanf("%d", memberTemp.book[cnt].seatNumber);
-					//rewind(stdin);
+					// select seat
+					printf("\n             Select Seat            \n");
+					printf("<<< Enter 0 to veiw available seat >>>\n");
+					printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+					for (int i = 0; i < memberTemp.book[cnt].quantity; i++) { // based on quantity
+						do {
+							printf("\n");
+							int once = 0;
+							// Coach
+							do {
+								printf("[%d] Enter coach: ", i + 1);
+								scanf(" %c", &memberTemp.book[cnt].trains.seats[i].coach);
+								rewind(stdin);
+
+								// Upper Case
+								if (memberTemp.book[cnt].trains.seats[i].coach >= 'q' && memberTemp.book[cnt].trains.seats[i].coach <= 'z')
+									memberTemp.book[cnt].trains.seats[i].coach = toupper(memberTemp.book[cnt].trains.seats[i].coach);
+
+								// View seat
+								if (memberTemp.book[cnt].trains.seats[i].coach == '0' && once != 1) {
+									once = 1;
+									displaySeat(memberTemp.book[cnt].trains.trainID);
+								}
+							} while (!(memberTemp.book[cnt].trains.seats[i].coach >= 'Q' && memberTemp.book[cnt].trains.seats[i].coach <= 'Z'));
+
+							int repeat = 0;
+							// Seat Number
+							do {
+								printf("[%d] Enter Seat Number (Example: 01A): ", i + 1);
+								scanf(" %s", memberTemp.book[cnt].trains.seats[i].seatNumber);
+								rewind(stdin);
+
+								// Upper Case
+								if (isalpha(memberTemp.book[cnt].trains.seats[i].seatNumber[2]))
+									memberTemp.book[cnt].trains.seats[i].seatNumber[2] = toupper(memberTemp.book[cnt].trains.seats[i].seatNumber[2]);
+
+								// View seat
+								if (strcmp(memberTemp.book[cnt].trains.seats[i].seatNumber, "0") == 0 && once != 1) {
+									once = 1;
+									displaySeat(memberTemp.book[cnt].trains.trainID);
+									continue;
+								}
+
+								repeat = 0;
+								// check if repeat seat number with previous seats
+								for (int d = 0; d < i; d++) {
+									if (strcmp(memberTemp.book[cnt].trains.seats[d].seatNumber, memberTemp.book[cnt].trains.seats[i].seatNumber) == 0 &&
+										memberTemp.book[cnt].trains.seats[d].coach == memberTemp.book[cnt].trains.seats[i].coach) {
+										repeat = 1;
+										printf("Repeated seat number!\n\n");
+										break;
+									}
+								}
+
+							} while (!(isdigit(memberTemp.book[cnt].trains.seats[i].seatNumber[0]) &&
+								isdigit(memberTemp.book[cnt].trains.seats[i].seatNumber[1]) &&
+								isalpha(memberTemp.book[cnt].trains.seats[i].seatNumber[2])) || repeat == 1);
+
+							valid = false;
+							// check if repeat seat number with booked seats
+							modifySeat(0, cnt, i, &valid);
+							if (valid) {
+								break;
+							}
+							else {
+								printf("\nSeat at %s, Coach %c has been booked.\nEnter again!\n", member.book[cnt].trains.seats[i].seatNumber, member.book[cnt].trains.seats[i].coach);
+								continue;
+							}
+
+						} while (1);
+					}
 					break;
 				case 2:
-					//printf("Enter coach: ");
-					//scanf(" %c", &memberTemp.book[cnt].coach);
-					//rewind(stdin);
-					break;
-				case 3:
 
 					oriQuantity = memberTemp.book[cnt].quantity;
 					do {
@@ -817,13 +906,19 @@ void modifyBooking() {
 									isdigit(memberTemp.book[cnt].trains.seats[i].seatNumber[1]) &&
 									isalpha(memberTemp.book[cnt].trains.seats[i].seatNumber[2])) || repeat == 1);
 
+								double price;
+								// update quantity
+								bool valid = schedulingData(memberTemp.book[cnt].trains.trainID, "validate", cnt, &price);
+								memberTemp.book[cnt].amount = price * memberTemp.book[cnt].quantity;
+
+								valid = false;
 								// check if repeat seat number with booked seats
-								bool seatAvailability = seat(cnt, i, 0);
-								if (seatAvailability) {
+								modifySeat(0, cnt, i, &valid);
+								if (valid) {
 									break;
 								}
 								else {
-									printf("\nSeat at %s has been booked.\nEnter again!\n", memberTemp.book[cnt].trains.seats[i].seatNumber);
+									printf("\nSeat at %s, Coach %c has been booked.\nEnter again!\n", member.book[cnt].trains.seats[i].seatNumber, member.book[cnt].trains.seats[i].coach);
 									continue;
 								}
 
@@ -846,18 +941,15 @@ void modifyBooking() {
 
 				do{
 					printf("\n[1] Confirm modify\n");
-					printf("[2] Modify more\n");
-					printf("[3] Cancel modify\n");
+					printf("[2] Cancel modify\n");
 					printf("Select number: ");
 					scanf(" %d", &selection);
 					rewind(stdin);
-				} while (!(selection == 1 || selection == 2 || selection == 3));
+				} while (!(selection == 1 || selection == 2));
 
 				if (selection == 1) {
+					modifySeat(1, cnt, memberTemp.book[cnt].quantity, &valid);
 					break;
-				}
-				else if (selection == 2) {
-					continue;
 				}
 				else return;
 
@@ -871,11 +963,12 @@ void modifyBooking() {
 			fwrite(&memberTemp.backMemberID, sizeof(int), 1, fp2);
 			fwrite(&memberTemp.book[cnt], sizeof(Booking), 1, fp2);
 		}
+
 		cnt++;
 		
 	}
 
-	// rewirte to the original file
+	// rewrite to the original file
 	if (found == 1) {
 		fclose(fp);
 		fclose(fp2);
@@ -889,8 +982,6 @@ void modifyBooking() {
 		}
 
 		cnt = 0;
-
-		bool seatAvailability = seat(backBookingID, 0, 2);
 
 		// read the temporary file data
 		while (fread(&memberTemp.backMemberID, sizeof(int), 1, fp) == 1 &&
@@ -916,6 +1007,8 @@ void displayBooking(int i, char mode[]) {
 	FILE* fp;
 	fp = fopen("Booking.bin", "rb");
 
+	system("cls");
+
 	if (fp == NULL) {
 		printf("NO booking record!\n");
 		printf("Enter Any Key to continue...");
@@ -923,9 +1016,6 @@ void displayBooking(int i, char mode[]) {
 		while (getc(stdin) != '\n');
 		return;
 	}
-
-	system("cls");
-
 
 	// read data and display 
 	while (fread(&memberTemp.backMemberID, sizeof(int), 1, fp) == 1 &&
@@ -939,11 +1029,13 @@ void displayBooking(int i, char mode[]) {
 			if (strcmp(mode, "member") == 0)
 				printf("Member ID: M%d\n\n", memberTemp.backMemberID);
 
+			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 15; i++) printf("=");
 			for (int i = 0; i < 150; i++)
 				printf("=");
 			printf("\n");
 			if (strcmp(mode, "staff") == 0) printf("%-15s", "Member ID");
 			printf("%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-16s%-16s%-16s\n", "Booking ID", "Train ID", "Seat Number", "Coach", "Payment Info", "Ticket Status", "Booking Date", "Departure Date", "Quantity", "Amount");
+			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 15; i++) printf("=");
 			for (int i = 0; i < 150; i++)
 				printf("=");
 			printf("\n");
@@ -959,7 +1051,7 @@ void displayBooking(int i, char mode[]) {
 		// seat
 		for (int i = 0; i < memberTemp.book[c].quantity; i++) {
 			if (i < 3) {
-				if (memberTemp.book[c].quantity > 3) {
+				if (memberTemp.book[c].quantity >= 3) {
 					if (i != 2) {
 						printf("%s, ", memberTemp.book[c].trains.seats[i].seatNumber);
 					}
@@ -1020,6 +1112,7 @@ void displayBooking(int i, char mode[]) {
 
 		// 4-7
 		if (memberTemp.book[c].quantity > 3) {
+			if (strcmp(mode, "staff") == 0) printf("%15s", "");
 			printf("%30s", "");
 			// seat
 			for (int i = 3; i < memberTemp.book[c].quantity; i++) {
@@ -1078,6 +1171,7 @@ void displayBooking(int i, char mode[]) {
 
 		// 7-9
 		if (memberTemp.book[c].quantity > 6 && memberTemp.book[c].quantity <= 9) {
+			if (strcmp(mode, "staff") == 0) printf("%15s", ""); 
 			printf("%15s", "");
 			// seat
 			for (int i = 6; i < memberTemp.book[c].quantity; i++) {
@@ -1136,6 +1230,7 @@ void displayBooking(int i, char mode[]) {
 
 		// 10
 		if (memberTemp.book[c].quantity == 10) {
+			if (strcmp(mode, "staff") == 0) printf("%15s", ""); 
 			printf("%30s", "");
 			printf("%-15s", memberTemp.book[c].trains.seats[9].seatNumber);
 			printf("%-15c", memberTemp.book[c].trains.seats[9].coach);
@@ -1163,6 +1258,7 @@ void cancelBooking(){
 	FILE* fp = fopen("Booking.bin", "rb");
 	FILE* fp2 = fopen("Booking_Modify.bin", "wb");
 
+	system("cls");
 
 	if (fp == NULL || fp2 == NULL) {
 		printf("NO booking record!\n");
@@ -1257,6 +1353,7 @@ void deleteBooking() {
 	FILE* fp = fopen("Booking.bin", "rb");
 	FILE* fp2 = fopen("Booking_Modify.bin", "wb");
 
+	system("cls");
 
 	if (fp == NULL || fp2 == NULL) {
 		printf("NO booking record!\n");
@@ -1352,6 +1449,8 @@ void summaryReport() {
 
 	FILE* fp = fopen("Booking.bin", "rb");
 
+	system("cls");
+
 	if (fp == NULL) {
 		printf("NO booking record!\n");
 		printf("Enter Any Key to continue...");
@@ -1405,7 +1504,7 @@ void summaryReport() {
 	printf(" Booking Summary Report\n");
 	printf("========================\n\n");
 	printf("Total number of bookings: %d\n", totalBookings);
-	printf("Total revenue generated: RM%.2f\n", totalRevenue);
+	printf("Total revenue: RM%.2f\n", totalRevenue);
 	printf("Average booking amount: RM%.2f\n", averageAmount);
 	printf("Total Booked Booking: %d\n", bookedCount);
 	printf("Total Canceled Booking: %d\n", canceledCount);
@@ -1453,26 +1552,7 @@ void summaryReport() {
 	return;
 }
 
-bool schedulingData(int *trainID, char purpose[], int bookingNum) {
-	struct Time {
-		int departureHour, departureMin;
-		int arrivalHour, arrivalMin;
-	};
-
-	typedef struct {
-		int departureDay, departureMonth, departureYear;
-		int arrivalDay, arrivalMonth, arrivalYear;
-	} Date;
-
-	typedef struct {
-		int trainID;
-		char departureStation[50], arrivalStation[50];
-		Date date;
-		struct Time time;
-		int availableSeats;
-		float ticketPrice;
-	} TrainSchedule;
-	TrainSchedule schedule = { 0 };
+bool schedulingData(int trainID, char purpose[], int bookingNum, double *price) {
 
 	FILE* fptr = fopen("train_schedule.txt", "r");
 
@@ -1488,35 +1568,36 @@ bool schedulingData(int *trainID, char purpose[], int bookingNum) {
 		printf("===========================================================================================================\n");
 		printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
 		printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
-		printf("===========================================================================================================\n\n");
+		printf("===========================================================================================================\n");
 	}
 
 
 	while (!feof(fptr)) {
 		fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
 			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-			&schedule.date.departureDay, &schedule.date.departureMonth, &schedule.date.departureYear,
-			&schedule.date.arrivalDay, &schedule.date.arrivalMonth, &schedule.date.arrivalYear,
-			&schedule.time.departureHour, &schedule.time.departureMin,
-			&schedule.time.arrivalHour, &schedule.time.arrivalMin,
+			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+			&schedule.departureTime.hour, &schedule.departureTime.min,
+			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
 			&schedule.availableSeats, &schedule.ticketPrice);
 
-		if (strcmp(purpose, "validate") == 0 && *trainID == schedule.trainID) {
-			member.book[bookingNum].trains.departureDate.day = schedule.date.arrivalDay;
-			member.book[bookingNum].trains.departureDate.month = schedule.date.arrivalMonth;
-			member.book[bookingNum].trains.departureDate.year = schedule.date.arrivalYear;
+		if (strcmp(purpose, "validate") == 0 && trainID == schedule.trainID) {
+			member.book[bookingNum].trains.departureDate.day = schedule.arrivalDate.day;
+			member.book[bookingNum].trains.departureDate.month = schedule.arrivalDate.month;
+			member.book[bookingNum].trains.departureDate.year = schedule.arrivalDate.year;
 			member.book[bookingNum].amount = schedule.ticketPrice;
+			*price = schedule.ticketPrice;
 			return true;
 		}
 		if (strcmp(purpose, "display") == 0) {
-			printf("%c%d\t    %-13s%-14s%02d/%02d/%d\t    %02d/%02d/%d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
+			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
 				TRAIN_FRONT_ID,
-				schedule.trainID, schedule.departureStation,
-				schedule.arrivalStation, schedule.date.departureDay, schedule.date.departureMonth,
-				schedule.date.departureYear, schedule.date.arrivalDay, schedule.date.arrivalMonth,
-				schedule.date.arrivalYear, schedule.time.departureHour,
-				schedule.time.departureMin, schedule.time.arrivalHour,
-				schedule.time.arrivalMin, schedule.availableSeats, schedule.ticketPrice);
+				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+				schedule.departureTime.hour, schedule.departureTime.min,
+				schedule.arrivalTime.hour, schedule.arrivalTime.min,
+				schedule.availableSeats, schedule.ticketPrice);
 		}
 	}
 	fclose(fptr);
@@ -1543,17 +1624,30 @@ bool loginMember(int * ID) {
 	do{
 		system("cls");
 		bookingLogo();
-		printf("Enter your Member ID (Enter 0 if forgot password): M");
-		scanf(" %d", &backMemberID);
-		rewind(stdin);
-		if (backMemberID == 0 && backMemberID != 1) {
-			found = 1;
+		do{
+			printf("Enter your Member ID: M");
+			scanf(" %d", &backMemberID);
+			rewind(stdin);
+		} while (!(backMemberID > 1000 && backMemberID < 10000));
 
-			continue;
+		printf("Enter your password");
+		if (found != 1) {
+			printf(" (Enter 0 if forgot password): ");
 		}
-		printf("Enter your password: ");
+		else printf(": ");
 		scanf("%d", &pass);
 		rewind(stdin);
+
+		if (pass == 0){
+			if (found == 1){
+				printf("Request password too frequent, please retry later\n\n");
+				continue;
+			}
+			found = 1;
+			passwordRecoveryMember();
+			printf("\n");
+			continue;
+		}
 
 		// read all records
 		fseek(fp, 0, SEEK_SET);
@@ -1627,9 +1721,10 @@ bool loginStaff() {
 		else printf(": ");
 		scanf("%s", pass);
 		rewind(stdin);
+
 		if (strcmp(pass, "0") == 0) {
 			if (found == 1){
-				printf("Request password operation too frequent, please retry later\n\n");
+				printf("Request password too frequent, please retry later\n\n");
 				continue;
 			}
 			found = 1;
@@ -1740,7 +1835,7 @@ int bookingID_Num(int *id) {
 }
 
 void displaySeat(int trainID) {
-	FILE* fp = fopen("avalableSeat.bin", "rb");
+	FILE* fp = fopen("availableSeat.bin", "rb");
 	int valid = 1;
 	if (fp == NULL) {
 		valid = 0;
@@ -1791,51 +1886,34 @@ void displaySeat(int trainID) {
 					for (int count = 0; count < (sizeof(memberTemp2.book[bookingNum].trains.seats)/sizeof(memberTemp2.book[bookingNum].trains.seats[0])); count++) {
 						// if train id correct
 						if (trainID == memberTemp2.book[bookingNum].trains.trainID && memberTemp2.book[bookingNum].trains.seats[count].coach == coach) {
-							if (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[0] == '0') {
-								if ((r + '0') == memberTemp2.book[bookingNum].trains.seats[count].seatNumber[1]) {
-
-									// if already booked
-									switch (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[2]) {
-									case 'A':
-										strcpy(seatA, "XXX");
-										break;
-									case 'B':
-										strcpy(seatB, "XXX");
-										break;
-									case 'C':
-										strcpy(seatC, "XXX");
-										break;
-									case 'D':
-										strcpy(seatD, "XXX");
-										break;
-									default:
-										break;
-									}
+							switch (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[2])
+							{
+							case 'A':
+								if (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[0] == seatA[0] &&
+									memberTemp2.book[bookingNum].trains.seats[count].seatNumber[1] == seatA[1]) {
+									strcpy(seatA, "XXX");
 								}
-							}
-							else {
-								sprintf(row, "%d", r); // change integer to string
-								if (row[0] == memberTemp2.book[bookingNum].trains.seats[count].seatNumber[0] &&
-									row[1] == memberTemp2.book[bookingNum].trains.seats[count].seatNumber[1]) {
-
-									// if already booked
-									switch (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[2]) {
-									case 'A':
-										strcpy(seatA, "XXX");
-										break;
-									case 'B':
-										strcpy(seatB, "XXX");
-										break;
-									case 'C':
-										strcpy(seatC, "XXX");
-										break;
-									case 'D':
-										strcpy(seatD, "XXX");
-										break;
-									default:
-										break;
-									}
+								break;
+							case 'B':
+								if (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[0] == seatB[0] &&
+									memberTemp2.book[bookingNum].trains.seats[count].seatNumber[1] == seatB[1]) {
+									strcpy(seatB, "XXX");
 								}
+								break;
+							case 'C':
+								if (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[0] == seatC[0] &&
+									memberTemp2.book[bookingNum].trains.seats[count].seatNumber[1] == seatC[1]) {
+									strcpy(seatC, "XXX");
+								}
+								break;
+							case 'D':
+								if (memberTemp2.book[bookingNum].trains.seats[count].seatNumber[0] == seatD[0] &&
+									memberTemp2.book[bookingNum].trains.seats[count].seatNumber[1] == seatD[1]) {
+									strcpy(seatD, "XXX");
+								}
+								break;
+							default:
+								break;
 							}
 						}
 					}
@@ -1855,13 +1933,11 @@ void displaySeat(int trainID) {
 }
 
 bool seat(int bookingNum, int count, int mode) {
-	// mode 0 = read only
+	// mode 0 = check
 	// mode 1 = add record
-	// mode 2 = modify record
-	// mode 3 = delete record
 
-	FILE* fp2 = fopen("avalableSeat.bin", "ab");
-	FILE* fp = fopen("avalableSeat.bin", "rb");
+	FILE* fp2 = fopen("availableSeat.bin", "ab");
+	FILE* fp = fopen("availableSeat.bin", "rb");
 	static int found = 0;
 
 	if (fp2 == NULL || fp == NULL){
@@ -1886,12 +1962,14 @@ bool seat(int bookingNum, int count, int mode) {
 		while (fread(&memberTemp.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp) == 1) {
 			// compare train id
 			if (member.book[bookingNum].trains.trainID == memberTemp.book[bookingNum].trains.trainID) {
-				// compare seat number and coach
-				if (strcmp(member.book[bookingNum].trains.seats[count].seatNumber, memberTemp.book[bookingNum].trains.seats[count].seatNumber) == 0 &&
-					member.book[bookingNum].trains.seats[count].coach == memberTemp.book[bookingNum].trains.seats[count].coach) {
-					fclose(fp);
-					fclose(fp2);
-					return false;
+				for (int i = 0; i < member.book[bookingNum].quantity; i++){
+					// compare seat number and coach
+					if (strcmp(member.book[bookingNum].trains.seats[count].seatNumber, memberTemp.book[bookingNum].trains.seats[i].seatNumber) == 0 &&
+						member.book[bookingNum].trains.seats[count].coach == memberTemp.book[bookingNum].trains.seats[i].coach) {
+						fclose(fp);
+						fclose(fp2);
+						return false;
+					}
 				}
 			}
 		}
@@ -1906,36 +1984,66 @@ bool seat(int bookingNum, int count, int mode) {
 		return true;
 	}
 
-	found = 0;
-	if (mode == 2){
-		FILE* fpTemp = fopen("avalableSeat_Modify.bin", "wb");
-		fseek(fp, 0, SEEK_SET);
+	return true;
+}
+
+void modifySeat(int mode, int bookingNum, int seatNum, bool *valid) {
+	// mode 0 = check
+	// mode 1 = modify
+	int found = 0;
+
+	if (mode == 0){
+		FILE* fp2 = fopen("availableSeat.bin", "ab");
+		FILE* fp = fopen("availableSeat.bin", "rb");
 		while (fread(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp) == 1) {
-			// compare
-			if (memberTemp2.book[bookingNum].trains.trainID == memberTemp.book[bookingNum].trains.trainID &&
-				strcmp(memberTemp2.book[bookingNum].trains.seats[count].seatNumber, memberTemp.book[bookingNum].trains.seats[count].seatNumber) == 0 &&
-				memberTemp2.book[bookingNum].trains.seats[count].coach == memberTemp.book[bookingNum].trains.seats[count].coach) {
+			// compare train id
+			if (memberTemp2.book[bookingNum].trains.trainID == memberTemp.book[bookingNum].trains.trainID) {
+				for (int i = 0; i < (sizeof(memberTemp2.book[bookingNum].trains.seats) / sizeof(memberTemp2.book[bookingNum].trains.seats[0])); i++) {
+					// compare seat number and coach
+					if (strcmp(memberTemp2.book[bookingNum].trains.seats[i].seatNumber, memberTemp.book[bookingNum].trains.seats[seatNum].seatNumber) == 0 &&
+						memberTemp2.book[bookingNum].trains.seats[i].coach == memberTemp.book[bookingNum].trains.seats[seatNum].coach) {
+						fclose(fp);
+						fclose(fp2);
+						return;
+					}
+				}
+			}
+		}
+		fclose(fp2);
+		fclose(fp);
+		*valid = true;
+		return;
+	}
+	
+	if (mode == 1) {
+		FILE* fpTemp = fopen("availableSeat_Modify.bin", "wb");
+		FILE* fp = fopen("availableSeat.bin", "rb");
+		while (fread(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp) == 1) {
+			// compare train ID and booking ID
+			if (memberTemp2.book[bookingNum].trains.trainID == memberTemp.book[bookingNum].trains.trainID) {
 				found = 1;
 				fwrite(&memberTemp.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpTemp);
+
 			}
-			else{
-				fwrite(&memberTemp.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpTemp);
+			else {
+				fwrite(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpTemp);
 			}
 		}
+
 		fclose(fpTemp);
-		if (found == 1){
-			fpTemp = fopen("avalableSeat_Modify.bin", "rb");
-			FILE *fpt = fopen("avalableSeat.bin", "wb");
+		fclose(fp);
+
+		if (found == 1) {
+			fpTemp = fopen("availableSeat_Modify.bin", "rb");
+			fp = fopen("availableSeat.bin", "wb");
 
 			while (fread(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpTemp) == 1) {
-				fwrite(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpt);
+				fwrite(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp);
 			}
 			fclose(fpTemp);
-			fclose(fpt);
+			fclose(fp);
 		}
 	}
-
-	return true;
 }
 
 void bookingLogo() {

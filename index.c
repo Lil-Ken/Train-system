@@ -621,7 +621,7 @@ int deleteStaff() {
 
 	if (stf == NULL && stf1 == NULL) {
 		printf("Disable open file");
-		exit(-1);
+		return;
 	}
 
 	printf("Enter Staff ID need to delete : ");
@@ -661,7 +661,7 @@ int deleteStaff() {
 
 		if (stf == NULL && stf1 == NULL) {
 			printf("Disable open file");
-			exit(-1);
+			return;
 		}
 
 		while (fread(&staff, sizeof(staffinfo), 1, stf1) != 0) {
@@ -1049,7 +1049,7 @@ void modifyMember() {
 
 	if (fp == NULL) {
 		printf("Enable to open this file\n");
-		exit(-1);
+		return;
 	}
 
 	system("cls");
@@ -1451,7 +1451,7 @@ void schedulingMain() {
 	FILE* fptr = fopen("train_schedule.txt", "a");
 	if (fptr == NULL) {
 		printf("Error opening file");
-		exit(-1);
+		return;
 	}
 
 	do {
@@ -1858,7 +1858,7 @@ void searchSchedule() {
 	FILE* fptr = fopen("train_schedule.txt", "r");
 	if (fptr == NULL) {
 		printf("Error opening file\n");
-		exit(-1);
+		return;
 	}
 
 	printf("Enter Train ID to search: T");
@@ -1918,7 +1918,7 @@ void modifySchedule() {
 
 	if (fptr == NULL || temp == NULL) {
 		printf("Error opening file\n");
-		exit(-1);
+		return;
 	}
 
 	printf("\nTrain Schedule:\n");
@@ -2059,7 +2059,7 @@ void deleteSchedule() {
 
 	if (fptr == NULL || temp == NULL) {
 		printf("Error opening file\n");
-		exit(-1);
+		return;
 	}
 
 	printf("\nTrain Schedule:\n");
@@ -2156,7 +2156,7 @@ void displaySchedule() {
 	FILE* fptr = fopen("train_schedule.txt", "r");
 	if (fptr == NULL) {
 		printf("Error opening file\n");
-		exit(-1);
+		return;
 	}
 
 	char checkRecord[7];

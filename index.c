@@ -92,7 +92,7 @@ void searchMember();
 void modifyMember();
 void displayMember();
 void deleteMember();
-void passwordRecoveryMember();
+void passwordRecoveryMember(int *memberID);
 void memberID(int* id);
 bool loginStaffMem();
 int validateName(const char* name);
@@ -1222,9 +1222,9 @@ void deleteMember() {
 	}
 }
 
-void passwordRecoveryMember() {
+void passwordRecoveryMember(int *memberID) {
 	char frontID, cnt, passrecov[30];
-	int backID, found = 0;
+	int found = 0;
 
 	FILE* fp;
 	fp = fopen("member.txt", "r");
@@ -1233,18 +1233,16 @@ void passwordRecoveryMember() {
 		printf("Unable to open files for deletion.\n");
 		return;
 	}
-	printf("Please enter your member ID:");
-	scanf(" %c%d", &frontID, &backID);
-	rewind(stdin);
 
 	printf("\nEnter the favorite food that you like:");
 	scanf("%[^\n]", &passrecov);
 	rewind(stdin);
 
 	while (fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber) != EOF) {
-		if (frontID == member.frontMemberID && backID == member.backMemberID && strcmp(passrecov, member.passRecovery) == 0) {
+		if (*memberID == member.backMemberID && strcmp(passrecov, member.passRecovery) == 0) {
 			found = 1;
 			printf("This is your password : %d.\n", member.password);
+			break;
 		}
 	}
 
@@ -2649,7 +2647,7 @@ void bookingMenuStaff(int* mode) {
 		printf("Enter Number ---------------------------- ");
 		scanf(" %d", mode);
 		rewind(stdin);
-	} while (*mode != 1 && *mode != 2 && *mode != 3 && *mode != 4 && *mode != 5);
+	} while (*mode != 1 && *mode != 2 && *mode != 3 && *mode != 4 && *mode != 5 && *mode != 6);
 }
 
 void bookingMenuMember(int* mode) {
@@ -4092,9 +4090,10 @@ bool loginMember(int* ID) {
 		return false;
 	}
 
-	do {
-		system("cls");
-		bookingLogo();
+	system("cls");
+	bookingLogo();
+	while (1) {
+
 		do {
 			printf("Enter your Member ID: M");
 			scanf(" %d", &backMemberID);
@@ -4115,7 +4114,7 @@ bool loginMember(int* ID) {
 				continue;
 			}
 			found = 1;
-			passwordRecoveryMember();
+			passwordRecoveryMember(&backMemberID);
 			printf("\n");
 			continue;
 		}
@@ -4148,9 +4147,12 @@ bool loginMember(int* ID) {
 				fclose(fp);
 				return false;
 			}
-		} while (!(contn == 'Y' || contn == 'y'));
+			else if (contn == 'Y' || contn == 'y') {
+				break;
+			}
+		} while (1);
 
-	} while (contn == 'Y' || contn == 'y');
+	}
 	fclose(fp);
 	return false;
 }

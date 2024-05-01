@@ -40,6 +40,7 @@ struct Member {
 };
 
 staffinfo staffs;
+struct Member member;
 
 void memberMain() {
 
@@ -98,7 +99,7 @@ int memberMenu() {
 }
 
 void addMember() {
-	struct Member member;
+	
 	char cont;
 	int id;
 
@@ -192,7 +193,7 @@ void addMember() {
 
 
 void searchMember() {
-	struct Member member;
+	
 
 	char frontID, cnt;
 	int backID, found = 0;
@@ -236,7 +237,7 @@ void searchMember() {
 }
 
 void modifyMember() {
-	struct Member member;
+	
 	char frontID, ctn;
 	int backID, found = 0, selection;
 
@@ -356,7 +357,7 @@ void modifyMember() {
 
 
 void displayMember() {
-	struct Member member;
+	
 
 	FILE* fp;
 	fp = fopen("member.txt", "r");
@@ -381,7 +382,7 @@ void displayMember() {
 }
 
 void deleteMember() {
-	struct Member member;
+
 	char frontID, cnt;
 	int backID, found = 0;
 
@@ -424,7 +425,7 @@ void deleteMember() {
 }
 
 void passwordRecoveryMember() {
-	struct Member member;
+	
 	char frontID, cnt, passrecov[30];
 	int backID, found = 0;
 
@@ -528,7 +529,7 @@ bool loginStaffMem() {
 			rewind(stdin);
 			if (contn == 'N' || contn == 'n') {
 				fclose(fp);
-				return false;
+				mainMenu();
 			}
 		} while (!(contn == 'Y' || contn == 'y'));
 	} while (1);
@@ -537,7 +538,7 @@ bool loginStaffMem() {
 }
 
 void memberID(int* id) {
-	struct Member member;
+	
 	FILE* fpt = fopen("member.txt", "r");
 
 	if (fpt == NULL) {

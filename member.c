@@ -611,3 +611,13 @@ int validateContactNumber(const char* contactNumber) {
 	else
 		return 0;
 }
+
+void memberLogo() {
+	printf("  __  __                 _               \n");
+	printf(" |  \\/  |               | |              \n");
+	printf(" | \\  / | _ _ _ __      | |   ___ _ __ \n");
+	printf(" | |\\/| |/ _ \\ '_ ` _\\  |_ \\ / _ \\ '__|\n");
+	printf(" | |  | |  __/ | | | | ||)  |  __/ |   \n");
+	printf(" |_|  |_|\\___|_| |_| |_||._/ \\___|_|   \n\n");
+
+}

@@ -139,6 +139,7 @@ int bookingID_Num(int* id);
 void displaySeat(int trainID);
 bool seat(int bookingNum, int count, int mode);
 void modifySeat(int mode, int bookingNum, int count, bool* valid);
+void removeSeat(int trainID, int bookingNum);
 void bookingLogo();
 
 
@@ -2707,7 +2708,7 @@ void addBooking() {
 	printf("Booking ID: %c%d\n\n", BOOKING_FRONT_ID, member.book[bookingNum].bookingID);
 
 	// user input
-	do {
+	while (1) {
 		printf("Enter Train ID");
 		if (found != 1) {
 			printf(" (Enter 0 to view train schedule): T");
@@ -2734,10 +2735,10 @@ void addBooking() {
 		else {
 			printf("Invalid Train ID!\n\n");
 		}
-	} while (1);
+	};
 
 	// enter quntity of booking
-	do {
+	while(1) {
 		printf("\nEnter quantity of booking: ");
 		scanf(" %d", &member.book[bookingNum].quantity);
 		rewind(stdin);
@@ -2751,7 +2752,7 @@ void addBooking() {
 			else
 				printf("Invalid quantity of booking\n\n");
 		}
-	} while (1);
+	};
 
 	found = 0;
 
@@ -2760,7 +2761,7 @@ void addBooking() {
 	printf("<<< Enter 0 to veiw available seat >>>\n");
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	for (int i = 0; i < member.book[bookingNum].quantity; i++) { // based on quantity
-		do {
+		while (1) {
 			printf("\n");
 
 			// Coach
@@ -2824,7 +2825,7 @@ void addBooking() {
 				continue;
 			}
 
-		} while (1);
+		};
 	}
 
 	// calculate amount
@@ -3138,7 +3139,7 @@ void modifyBooking() {
 			member.backMemberID == memberTemp.backMemberID) {
 			found = 1;
 			// loop for modify more data
-			do {
+			while (1) {
 				// loop for validation
 				do {
 					printf("\nSeat number & Coach ---------- 1\n");
@@ -3156,7 +3157,7 @@ void modifyBooking() {
 					printf("<<< Enter 0 to veiw available seat >>>\n");
 					printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 					for (int i = 0; i < memberTemp.book[cnt].quantity; i++) { // based on quantity
-						do {
+						while (1) {
 							printf("\n");
 							int once = 0;
 							// Coach
@@ -3220,13 +3221,13 @@ void modifyBooking() {
 								continue;
 							}
 
-						} while (1);
+						};
 					}
 					break;
 				case 2:
 
 					oriQuantity = memberTemp.book[cnt].quantity;
-					do {
+					while (1) {
 						printf("\nEnter quantity of booking: ");
 						scanf(" %d", &memberTemp.book[cnt].quantity);
 						rewind(stdin);
@@ -3240,7 +3241,7 @@ void modifyBooking() {
 							else
 								printf("Invalid quantity of booking\n\n");
 						}
-					} while (1);
+					};
 
 					if (memberTemp.book[cnt].quantity > oriQuantity) {
 
@@ -3249,7 +3250,7 @@ void modifyBooking() {
 						printf("<<< Enter 0 to veiw available seat >>>\n");
 						printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 						for (int i = oriQuantity; i < memberTemp.book[cnt].quantity; i++) { // based on quantity
-							do {
+							while (1) {
 								printf("\n");
 								int once = 0;
 								// Coach
@@ -3318,7 +3319,7 @@ void modifyBooking() {
 									continue;
 								}
 
-							} while (1);
+							};
 						}
 					}
 					else if (memberTemp.book[cnt].quantity < oriQuantity) {
@@ -3349,7 +3350,7 @@ void modifyBooking() {
 				}
 				else return;
 
-			} while (1);
+			};
 			// write modified data into the temporary file
 			fwrite(&memberTemp.backMemberID, sizeof(int), 1, fp2);
 			fwrite(&memberTemp.book[cnt], sizeof(Booking), 1, fp2);
@@ -3682,11 +3683,12 @@ void cancelBooking() {
 				printf("\nConfirm cancel(Y/N): ");
 				scanf(" %c", &confirm);
 				rewind(stdin);
-			} while (confirm != 'Y' && confirm != 'y' && confirm != 'N' && confirm != 'n');
+				if (confirm == 'N' || confirm == 'n') {
+					return;
+				}
+			} while (!(confirm == 'Y' && confirm == 'y'));
 
-			if (confirm == 'N' || confirm == 'n') {
-				return;
-			}
+			removeSeat(memberTemp.book[cnt].trains.trainID, cnt, memberTemp.book[cnt].trains.seats[0].coach, memberTemp.book[cnt].trains.seats[0].seatNumber);
 
 			// write to temporary file
 			strcpy(memberTemp.book[cnt].ticketStatus, "Canceled");
@@ -3776,11 +3778,12 @@ void deleteBooking() {
 				printf("\nConfirm delete(Y/N): ");
 				scanf(" %c", &confirm);
 				rewind(stdin);
-			} while (confirm != 'Y' && confirm != 'y' && confirm != 'N' && confirm != 'n');
+				if (confirm == 'N' || confirm == 'n') {
+					return;
+				}
+			} while (!(confirm == 'Y' && confirm == 'y'));
+			removeSeat(memberTemp.book[cnt].trains.trainID, cnt, memberTemp.book[cnt].trains.seats[0].coach, memberTemp.book[cnt].trains.seats[0].seatNumber);
 
-			if (confirm == 'N' || confirm == 'n') {
-				return;
-			}
 		}
 		else {
 			// write the original data into temporary file
@@ -3858,7 +3861,7 @@ void summaryReport() {
 	}
 
 	while (1){
-		do {
+		while (1) {
 			printf(" report type\n");
 			printf("=============\n");
 			printf("[1] Monthly Report\n");
@@ -3890,7 +3893,7 @@ void summaryReport() {
 				printf("Invalid selection.\n\n");
 				continue;
 			}
-		} while (1);
+		};
 
 
 		while (fread(&memberTemp.backMemberID, sizeof(int), 1, fp) == 1 &&
@@ -4135,7 +4138,7 @@ bool loginMember(int* ID) {
 
 		}
 
-		do {
+		while (1) {
 			printf("\n*** Invalid MEMBER ID or PASSWORD ***\n");
 			printf("[Y] Retry\n");
 			printf("[N] Back to Menu\n");
@@ -4149,7 +4152,7 @@ bool loginMember(int* ID) {
 			else if (contn == 'Y' || contn == 'y') {
 				break;
 			}
-		} while (1);
+		};
 
 	}
 	fclose(fp);
@@ -4172,7 +4175,7 @@ bool loginStaff() {
 		return false;
 	}
 
-	do {
+	while (1) {
 		system("cls");
 		bookingLogo();
 		do
@@ -4231,7 +4234,7 @@ bool loginStaff() {
 				return false;
 			}
 		} while (!(contn == 'Y' || contn == 'y'));
-	} while (1);
+	};
 	fclose(fp);
 	return false;
 }
@@ -4517,6 +4520,44 @@ void modifySeat(int mode, int bookingNum, int seatNum, bool* valid) {
 		}
 	}
 }
+
+void removeSeat(int trainID, int bookingNum, char coach, char seat[]) {
+	// remove a record
+	int found = 0;
+
+
+	FILE* fpTemp = fopen("availableSeat_Modify.bin", "wb");
+	FILE* fp = fopen("availableSeat.bin", "rb");
+	while (fread(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp) == 1) {
+		// compare train ID and booking ID
+		if (memberTemp2.book[bookingNum].trains.trainID == trainID &&
+			memberTemp2.book[bookingNum].trains.seats[0].coach == coach &&
+			strcmp(memberTemp2.book[bookingNum].trains.seats[0].seatNumber, seat) == 0) {
+			found = 1;
+			continue;
+
+		}
+		else {
+			fwrite(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpTemp);
+		}
+		
+	}
+
+	fclose(fpTemp);
+	fclose(fp);
+
+	if (found == 1) {
+		fpTemp = fopen("availableSeat_Modify.bin", "rb");
+		fp = fopen("availableSeat.bin", "wb");
+
+		while (fread(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpTemp) == 1) {
+			fwrite(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fp);
+		}
+		fclose(fpTemp);
+		fclose(fp);
+	}
+}
+
 
 void bookingLogo() {
 	printf("______                _     _               \n");

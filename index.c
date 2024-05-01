@@ -176,6 +176,8 @@ int menu() {
 	do {
 		system("cls");
 
+		//system("color 06");
+
 		printf("                               _____                     _                       ___     _  _            _\n");
 		printf("                              |_   _|    _ _   __ _     (_)    _ _       o O O  / __|   | || |   ___    | |_     ___    _ __   \n");
 		printf("                                | |     | '_| / _` |    | |   | ' \\     o       \\__ \\    \\_, |  (_-<    |  _|   / -_)  | '  \\  \n");
@@ -192,9 +194,9 @@ int menu() {
 		printf(" (__)  (_)  (____/ (__) \\_/\\_/(__)  (__)                                                 (____) (_)  \\_)(_/(____)\\_)(_/(____/(____)(__\\_)  \n");
 
 
-		printf(" ____        ____   ___  _  _  ____  ____  _  _  __     __   __ _   ___                    ___        ____   __    __   __ _   __   __ _   ___      \n");
+		printf(" ____        ____   ___  _  _  ____  ____  _  _  __     __   __ _   ___                    ___        ____   __    __   __ _   __   __ _   ___\n");
 		printf("(__  \\      / ___) / __)/ )( \\(  __)(    \\/ )( \\(  )   (  ) (  ( \\ / __)                  / _ \\      (  _ \\ /  \\  /  \\ (  / ) (  ) (  ( \\ / __)\n");
-		printf(" (__ (  _   \\___ \\( (__ ) __ ( ) _)  ) D () \\/ (/ (_/\\  )(  /    /( (_ \\                 (__  (  _    ) _ ((  O )(  O ) )  (   )(  /    /( (_ \\    \n");
+		printf(" (__ (  _   \\___ \\( (__ ) __ ( ) _)  ) D () \\/ (/ (_/\\  )(  /    /( (_ \\                 (__  (  _    ) _ ((  O )(  O ) )  (   )(  /    /( (_ \\\n");
 		printf("(____/ (_)  (____/ \\___)\\_)(_/(____)(____/\\____/\\____/ (__) \\_)__) \\___/                   (__/ (_)  (____/ \\__/  \\__/ (__\\_) (__) \\_)__) \\___/\n");
 
 
@@ -843,6 +845,7 @@ int staffPayslip() {
 }
 
 // Member
+Member member;
 void memberMain() {
 	loginStaffMem();
 
@@ -899,7 +902,6 @@ int memberMenu() {
 }
 
 void addMember() {
-	Member member;
 	char cont;
 	int id;
 
@@ -993,7 +995,6 @@ void addMember() {
 
 
 void searchMember() {
-	Member member;
 
 	char frontID, cnt;
 	int backID, found = 0;
@@ -1037,7 +1038,6 @@ void searchMember() {
 }
 
 void modifyMember() {
-	Member member;
 	char frontID, ctn;
 	int backID, found = 0, selection;
 
@@ -1157,7 +1157,6 @@ void modifyMember() {
 
 
 void displayMember() {
-	Member member;
 
 	FILE* fp;
 	fp = fopen("member.txt", "r");
@@ -1182,7 +1181,6 @@ void displayMember() {
 }
 
 void deleteMember() {
-	Member member;
 	char frontID, cnt;
 	int backID, found = 0;
 
@@ -1225,7 +1223,6 @@ void deleteMember() {
 }
 
 void passwordRecoveryMember() {
-	Member member;
 	char frontID, cnt, passrecov[30];
 	int backID, found = 0;
 
@@ -1340,7 +1337,6 @@ bool loginStaffMem() {
 }
 
 void memberID(int* id) {
-	Member member;
 	FILE* fpt = fopen("member.txt", "r");
 
 	if (fpt == NULL) {
@@ -3843,11 +3839,13 @@ void deleteBooking() {
 }
 
 void summaryReport() {
-	int selection;
+	int selection, month, year, found = 0;
+	const char* monthNames[] = { "Invalid", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 	int totalBookings = 0;
 	double totalRevenue = 0;
 	int creditCardCount = 0, cashCount = 0, debitCardCount = 0, bankTransferCount = 0, touchNGoCount = 0;
 	int bookedCount = 0, canceledCount = 0;
+	double averageAmount;
 
 	FILE* fp = fopen("Booking.bin", "rb");
 
@@ -3861,50 +3859,108 @@ void summaryReport() {
 		return;
 	}
 
-	while (fread(&memberTemp.backMemberID, sizeof(int), 1, fp) == 1 &&
-		fread(&memberTemp.book[totalBookings], sizeof(Booking), 1, fp) == 1) {
+	while (1){
+		do {
+			printf(" report type\n");
+			printf("=============\n");
+			printf("[1] Monthly Report\n");
+			printf("[2] Yearly Report\n");
+			printf("[3] Back\n\n");
+			printf("Enter your selection: ");
+			scanf("%d", &selection);
 
-		// count total revenue generated
-		totalRevenue += memberTemp.book[totalBookings].amount;
+			if (selection == 1) {
+				do {
+					printf("Enter the year: ");
+					scanf("%d", &year);
+				} while (!(year >= 2000 && year <= 2025));
+				do {
+					printf("Enter the month (1-12): ");
+					scanf("%d", &month);
+				} while (!(month >= 1 && month <= 12));
+				break;
+			}
+			else if (selection == 2) {
+				do {
+					printf("Enter the year (2000-2024): ");
+					scanf("%d", &year);
+				} while (!(year >= 2000 && year <= 2024));
+				break;
+			}
+			else if (selection == 3) return;
+			else {
+				printf("Invalid selection.\n\n");
+				continue;
+			}
+		} while (1);
 
-		// count total number of each payment method
-		if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Credit Card") == 0) {
-			creditCardCount++;
-		}
-		else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Cash") == 0) {
-			cashCount++;
-		}
-		else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Debit Card") == 0) {
-			debitCardCount++;
-		}
-		else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Bank Transfer") == 0) {
-			bankTransferCount++;
-		}
-		else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Touch n Go") == 0) {
-			touchNGoCount++;
+
+		while (fread(&memberTemp.backMemberID, sizeof(int), 1, fp) == 1 &&
+			fread(&memberTemp.book[totalBookings], sizeof(Booking), 1, fp) == 1) {
+
+			if (selection == 1 && memberTemp.book[totalBookings].bookingDate.month != month && memberTemp.book[totalBookings].bookingDate.year != year) {
+				continue;
+			}
+			if (selection == 2 && memberTemp.book[totalBookings].bookingDate.year != year) {
+				continue;
+			}
+
+			found = 1;
+
+			// count total revenue generated
+			totalRevenue += memberTemp.book[totalBookings].amount;
+
+			// count total number of each payment method
+			if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Credit Card") == 0) {
+				creditCardCount++;
+			}
+			else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Cash") == 0) {
+				cashCount++;
+			}
+			else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Debit Card") == 0) {
+				debitCardCount++;
+			}
+			else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Bank Transfer") == 0) {
+				bankTransferCount++;
+			}
+			else if (strcmp(memberTemp.book[totalBookings].paymentInfo, "Touch n Go") == 0) {
+				touchNGoCount++;
+			}
+
+			// count book status
+			if (strcmp(memberTemp.book[totalBookings].ticketStatus, "Booked") == 0) {
+				bookedCount++;
+			}
+			else if (strcmp(memberTemp.book[totalBookings].ticketStatus, "Canceled") == 0) {
+				canceledCount++;
+			}
+
+			// count total number of bookings
+			totalBookings++;
 		}
 
-		// count book status
-		if (strcmp(memberTemp.book[totalBookings].ticketStatus, "Booked") == 0) {
-			bookedCount++;
-		}
-		else if (strcmp(memberTemp.book[totalBookings].ticketStatus, "Canceled") == 0) {
-			canceledCount++;
-		}
+		// Average booking amount
+		averageAmount = totalRevenue / totalBookings;
 
-		// count total number of bookings
-		totalBookings++;
+		fclose(fp);
+		if (found == 1) {
+			break;
+		}
+		else {
+			printf("No record for your selection date\n\n");
+			continue;
+		}
 	}
-
-	// Average booking amount
-	double averageAmount = totalRevenue / totalBookings;
-
-	fclose(fp);
 
 	// Display the report
 	system("cls");
-	printf(" Booking Summary Report\n");
-	printf("========================\n\n");
+	if (selection == 1) {
+		printf(" Monthly Booking Summary Report for %s %d\n", monthNames[month], year);
+	}
+	else {
+		printf(" Yearly Booking Summary Report for the year %d\n", year);
+	}
+	printf("================================================\n\n");
 	printf("Total number of bookings: %d\n", totalBookings);
 	printf("Total revenue: RM%.2f\n", totalRevenue);
 	printf("Average booking amount: RM%.2f\n", averageAmount);
@@ -3930,8 +3986,21 @@ void summaryReport() {
 	// write into file
 	FILE* fp2 = fopen("summaryBookingReport.txt", "w");
 
-	fprintf(fp2, "Booking Summary Report:\n");
-	printf("=======================\n\n");
+	if (fp2 == NULL) {
+		printf("Unable to open file\n");
+		printf("Enter Any Key to continue...");
+		rewind(stdin);
+		while (getc(stdin) != '\n');
+		return;
+	}
+
+	if (selection == 1) {
+		fprintf(fp2, " Monthly Booking Summary Report for %s %d:\n", monthNames[month], year);
+	}
+	else {
+		fprintf(fp2, " Yearly Booking Summary Report for the year %d:\n", year);
+	}
+	printf("================================================\n\n");
 	fprintf(fp2, "Total number of bookings: %d\n", totalBookings);
 	fprintf(fp2, "Total revenue generated: RM%.2f\n", totalRevenue);
 	fprintf(fp2, "Average booking amount: RM%.2f\n", averageAmount);

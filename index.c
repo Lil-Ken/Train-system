@@ -4075,8 +4075,7 @@ bool schedulingData(int trainID, char purpose[], int bookingNum, double* price) 
 
 bool loginMember(int* ID) {
 	int backMemberID, pass, found = 0;
-	char contn = ' ', frontMemberID;
-	char name[30], gender, IC[15], phone[15], passRecovery[30];
+	char contn = ' ';
 
 	// open member text file for reading
 	FILE* fp;
@@ -4122,7 +4121,7 @@ bool loginMember(int* ID) {
 		// read all records
 		fseek(fp, 0, SEEK_SET);
 		while (!feof(fp)) {
-			fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &frontMemberID, &member.backMemberID, &name, &member.password, &passRecovery, &gender, &IC, &phone);
+			fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.backMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
 			// if ID and password is correct
 			if (member.backMemberID == backMemberID && member.password == pass) {
 				printf("Successful login!\n");

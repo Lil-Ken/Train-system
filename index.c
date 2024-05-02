@@ -1051,7 +1051,9 @@ void searchMember() {
 
 		if (frontID == member.frontMemberID && backID == member.backMemberID) {
 			found = 1;
+			printf("=============================================================================================\n");
 			printf("%-15s%-15s%-15s%-15s%-18s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
+			printf("=============================================================================================\n");
 			printf("%c%-13d %-14s %-14d %-14c %-17s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 			system("pause");

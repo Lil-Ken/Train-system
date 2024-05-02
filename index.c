@@ -84,6 +84,7 @@ int passwordRecovery(int id);
 int deleteStaff();
 int staffid();
 int staffPayslip();
+void staffLogo();
 
 // Member
 int memberMenu();
@@ -92,7 +93,7 @@ void searchMember();
 void modifyMember();
 void displayMember();
 void deleteMember();
-void passwordRecoveryMember(int *memberID);
+void passwordRecoveryMember(int* memberID);
 void memberID(int* id);
 bool loginStaffMem();
 int validateName(const char* name);
@@ -255,6 +256,7 @@ int staffMenu() {
 
 
 		system("cls");
+		staffLogo();
 		printf("==============================\n");
 		printf("       Select Function\n");
 		printf("==============================\n\n");
@@ -276,7 +278,8 @@ int staffMenu() {
 
 
 int addStaff() {
-
+	system("cls");
+	staffLogo();
 	int exit, passrec, valid = 0;
 	staff.frontID = 'S';
 
@@ -376,6 +379,8 @@ int addStaff() {
 
 
 int searchStaff() {
+	system("cls");
+	staffLogo();
 	char frontid;
 	int backid, num = 0;
 
@@ -418,7 +423,8 @@ int searchStaff() {
 
 
 int modifyStaff() {
-
+	system("cls");
+	staffLogo();
 	char frontid, ctn;
 	int backid, selection, num = 0, valid = 0;
 
@@ -438,12 +444,10 @@ int modifyStaff() {
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 		if (staff.backID == backid) {
 			num = 1;
-			do {
-
 				printf("\n\nID             NAME             POSITION         PASSWORD \n");
 				printf("-------------------------------------------------------------\n");
 				printf("%c%-12d  %-15s  %-15s  %-15s\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
-
+			do {
 
 				printf("\nName -------------------- 1\n");
 				printf("position ---------------- 2\n");
@@ -545,7 +549,8 @@ int modifyStaff() {
 
 
 int displayStaff() {
-
+	system("cls");
+	staffLogo();
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -567,7 +572,7 @@ int displayStaff() {
 }
 
 int passwordRecovery(int id) {
-
+	
 	int num1 = 0;
 	char frontid, passrec[51];
 	FILE* stf;
@@ -611,7 +616,8 @@ int passwordRecovery(int id) {
 }
 
 int deleteStaff() {
-
+	system("cls");
+	staffLogo();
 	int backid, num = 0;
 	char frontid, ctn;
 
@@ -634,7 +640,11 @@ int deleteStaff() {
 	{
 		if (backid == staff.backID) {
 			num = 1;
+			printf("\n\nID             NAME             POSITION         PASSWORD \n");
+			printf("-------------------------------------------------------------\n");
+			printf("%c%-12d  %-15s  %-15s  %-15s\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
 			do {
+
 				printf("Comfirm delete (Y/N) : ");
 				scanf("%c", &ctn); rewind(stdin);
 			} while (ctn != 'Y' && ctn != 'N' && ctn != 'y' && ctn != 'n');
@@ -747,10 +757,11 @@ int staffid() {
 }
 
 int staffPayslip() {
-
-	int backid, ot, othour = 0, num = 0;
+	system("cls");
+	staffLogo();
+	int backid, ot, num = 0;
 	char frontid;
-	double  basic, allowance = 600.00, epf, socso, eis;
+	double  basic, allowance = 600.00, epf, socso, eis,othour = 0;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -786,7 +797,7 @@ int staffPayslip() {
 			if (ot == 1) {
 				do {
 					printf("how many hour you OT : ");
-					scanf("%d", &othour);
+					scanf("%lf", &othour);
 				} while (othour < 0 || othour>10000);
 
 			}
@@ -796,14 +807,14 @@ int staffPayslip() {
 			eis = basic * 0.02;
 			othour = othour * 11.00;
 			printf("\t\t     __________              ___        ___             __      __      __________\n");
-			printf("\t\t    |   ____   |     /\\      \\  \\      /  /            |  |    ||    |   ____   |\n");
+			printf("\t\t    |   ____   |     /\\      \\  \\      /  /            |  |    |__|    |   ____   |\n");
 			printf("\t\t    |  |    |  |    /  \\      \\  \\    /  /  ______     |  |     __     |  |    |  |   \n");
-			printf("\t\t    |  ||  |   / /\\ \\      \\  \\  /  /  /  __  \\    |  |    |  |    |  ||  |    \n");
-			printf("\t\t    |    _____|  / /  \\ \\      \\  \\/  /  /  /  \\_\\   |  |    |  |    |    ______|  \n");
-			printf("\t\t    |   |        / /\\ \\      \\    /   \\  \\_____    |  |    |  |    |   |       \n");
+			printf("\t\t    |  |____|  |   / /\\ \\      \\  \\  /  /  /  __  \\    |  |    |  |    |  |____|  |    \n");
+			printf("\t\t    |    ______|  / /  \\ \\      \\  \\/  /  /  /  \\__\\   |  |    |  |    |    ______|  \n");
+			printf("\t\t    |   |        / /____\\ \\      \\    /   \\  \\_____    |  |    |  |    |   |       \n");
 			printf("\t\t    |   |       /  ______  \\      |  |     \\_____  \\   |  |    |  |    |   | \n");
 			printf("\t\t    |   |      /  /      \\  \\     |  |    ______/  /   |  |    |  |    |   |\n");
-			printf("\t\t    ||     /  /        \\  \\    ||    \\/    ||    ||    |_|\n\n");
+			printf("\t\t    |___|     /__/        \\__\\    |__|    \\_______/    |__|    |__|    |___|\n\n");
 
 			printf("           ---------------------------------------------------------------------------------------------\n\n");
 
@@ -844,7 +855,16 @@ int staffPayslip() {
 	staffMain();
 
 }
+void staffLogo() {
 
+	printf("   _____ _         __  __ \n");
+	printf("  / ____| |       / _|/ _|\n");
+	printf(" | (___ | |_ __ _| | | |_ \n");
+	printf("  \\___ \\| __/ _` |  _|  _|\n");
+	printf("  ____) | || (_| | | | |  \n");
+	printf(" |_____/ \\__\\__,_|_| |_| \n\n");
+
+}
 // Member
 Member member;
 void memberMain() {
@@ -1223,7 +1243,7 @@ void deleteMember() {
 	}
 }
 
-void passwordRecoveryMember(int *memberID) {
+void passwordRecoveryMember(int* memberID) {
 	char frontID, cnt, passrecov[30];
 	int found = 0;
 
@@ -2738,7 +2758,7 @@ void addBooking() {
 	};
 
 	// enter quntity of booking
-	while(1) {
+	while (1) {
 		printf("\nEnter quantity of booking: ");
 		scanf(" %d", &member.book[bookingNum].quantity);
 		rewind(stdin);
@@ -3860,7 +3880,7 @@ void summaryReport() {
 		return;
 	}
 
-	while (1){
+	while (1) {
 		while (1) {
 			printf(" report type\n");
 			printf("=============\n");
@@ -4540,7 +4560,7 @@ void removeSeat(int trainID, int bookingNum, char coach, char seat[]) {
 		else {
 			fwrite(&memberTemp2.book[bookingNum].trains, sizeof(TrainSchedule), 1, fpTemp);
 		}
-		
+
 	}
 
 	fclose(fpTemp);

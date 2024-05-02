@@ -1070,6 +1070,7 @@ void searchMember() {
 }
 
 void modifyMember() {
+
 	char frontID, ctn;
 	int backID, found = 0, selection;
 
@@ -1079,7 +1080,7 @@ void modifyMember() {
 
 	if (fp == NULL) {
 		printf("Enable to open this file\n");
-		return;
+		exit(-1);
 	}
 
 	system("cls");
@@ -1185,6 +1186,9 @@ void modifyMember() {
 	remove("member.txt");
 	rename("memberModify.txt", "member.txt");
 
+	system("pause");
+	memberMain();
+
 }
 
 
@@ -1213,6 +1217,7 @@ void displayMember() {
 }
 
 void deleteMember() {
+
 	char frontID, cnt;
 	int backID, found = 0;
 

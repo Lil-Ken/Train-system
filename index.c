@@ -902,7 +902,7 @@ int memberMenu() {
 	int mode;
 	do {
 		system("cls");
-
+		memberLogo();
 
 		printf("==============================\n");
 		printf("       Select Function\n");

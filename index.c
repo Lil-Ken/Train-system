@@ -1821,10 +1821,10 @@ int addSchedule(int currentTrainID) {
 
 	printf("Enter Departure Station: ");
 	rewind(stdin);
-	scanf("%s", schedule.departureStation);
+	scanf("%[^\n]", schedule.departureStation);
 	printf("Enter Arrival Station: ");
 	rewind(stdin);
-	scanf("%s", schedule.arrivalStation);
+	scanf("%[^\n]", schedule.arrivalStation);
 
 	do {
 		printf("Enter Departure Date (DD/MM/YYYY): ");

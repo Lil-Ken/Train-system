@@ -943,7 +943,7 @@ void addMember() {
 	FILE* fp;
 	fp = fopen("member.txt", "a");
 	system("cls");
-
+	memberLogo();
 	do {
 		// auto generate ID:
 		member.frontMemberID = 'M';
@@ -1036,7 +1036,7 @@ void searchMember() {
 	FILE* fp;
 	fp = fopen("member.txt", "r");
 	system("cls");
-
+	memberLogo();
 	if (fp == NULL) {
 		printf("Unable to open file!\n");
 		return;
@@ -1193,14 +1193,14 @@ void displayMember() {
 	FILE* fp;
 	fp = fopen("member.txt", "r");
 	system("cls");
-
+	memberLogo();
 	if (fp == NULL) {
 		printf("Enable to open the file\n");
 		return;
 	}
-
+	printf("=============================================================================================\n");
 	printf("%-15s%-15s%-15s%-15s%-18s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
-
+	printf("=============================================================================================\n");
 
 	while (!feof(fp)) {
 		fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);

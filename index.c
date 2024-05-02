@@ -15,7 +15,8 @@
 #define ROWS 100
 #define COLS 4
 #define MAX_BOOKING 10000
-
+#define MAX_AVAILABLE_SEATS 400
+#define LATEST_YEAR 2024
 
 // Structure Declaration
 struct Date {
@@ -63,8 +64,19 @@ typedef struct {
 
 }staffinfo;
 
+TrainSchedule schedule;
 
+// Booking
+// quantity and seat number
 
+Member member;
+Member memberTemp;
+Member memberTemp2;
+staffinfo staffs;
+TrainSchedule schedule = { 0 };
+struct Date availableSeat[MAX_BOOKING_DAYS];
+
+//end of booking struct
 
 // Function Declaration
 // Main
@@ -105,6 +117,7 @@ int validatePassRec(const char* passRec);
 void memberLogo();
 
 // Schldule
+void scheduleLogo();
 int scheduleMode(int selection);
 void scheduleMenu(int* mode);
 void searchSchedule();
@@ -112,14 +125,12 @@ void modifySchedule();
 int addSchedule(int trainIDCounter);
 void displaySchedule();
 void deleteSchedule();
-void scheduleReport(int* sreport);
-void dateScheduleReport(int day, int month, int year);
-void overalScheduleReport(int day, int month, int year);
-void stationScheduleReport(char station[50]);
-void scheduleLogo();
+void scheduleReport();
+void availableSeats(int display);
 void staffVerify();
 void memberVerify(int* mode);
 void memberLogin(int* mode);
+
 
 // Booking
 void bookingMenu(int* loginMode);
@@ -444,9 +455,9 @@ int modifyStaff() {
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 		if (staff.backID == backid) {
 			num = 1;
-				printf("\n\nID             NAME             POSITION         PASSWORD \n");
-				printf("-------------------------------------------------------------\n");
-				printf("%c%-12d  %-15s  %-15s  %-15s\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
+			printf("\n\nID             NAME             POSITION         PASSWORD \n");
+			printf("-------------------------------------------------------------\n");
+			printf("%c%-12d  %-15s  %-15s  %-15s\n", staff.frontID, staff.backID, staff.name, staff.position, staff.pass);
 			do {
 
 				printf("\nName -------------------- 1\n");
@@ -572,7 +583,7 @@ int displayStaff() {
 }
 
 int passwordRecovery(int id) {
-	
+
 	int num1 = 0;
 	char frontid, passrec[51];
 	FILE* stf;
@@ -761,7 +772,7 @@ int staffPayslip() {
 	staffLogo();
 	int backid, ot, num = 0;
 	char frontid;
-	double  basic, allowance = 600.00, epf, socso, eis,othour = 0;
+	double  basic, allowance = 600.00, epf, socso, eis, othour = 0;
 	FILE* stf;
 	stf = fopen("staff.bin", "rb");
 
@@ -1441,15 +1452,18 @@ void memberLogo() {
 
 
 // Shedule
+
 int scheduleMode(int selection) {
 	system("cls");
+	scheduleLogo();
 	printf("=================================\n");
 	printf("       Select Schedule Mode\n");
 	printf("=================================\n\n");
 	printf("Staff ---------------- 1\n");
 	printf("Member --------------- 2\n");
-	printf("Back to main menu ---- 3\n");
-	printf("Enter your mode selection: ");
+	printf("Back to main menu ---- 3\n\n");
+	printf("Enter Number --------- ");
+	rewind(stdin);
 	scanf("%d", &selection);
 	return selection;
 }
@@ -1457,13 +1471,14 @@ int scheduleMode(int selection) {
 void schedulingMain() {
 	int select = 0, mode = 0;
 	char choice;
-	TrainSchedule schedule;
+
 	int currentTrainID = 1001;
 	schedule.availableSeats = 400;
 
 	FILE* fptr = fopen("train_schedule.txt", "a");
 	if (fptr == NULL) {
 		printf("Error opening file");
+		system("pause");
 		return;
 	}
 
@@ -1475,7 +1490,6 @@ void schedulingMain() {
 			if (select != 0) {
 				do {
 					scheduleMenu(&select);
-
 					// admin mode
 					switch (select) {
 					case 1:
@@ -1486,11 +1500,7 @@ void schedulingMain() {
 						} while (choice == 'Y' || choice == 'y');
 						break;
 					case 2:
-						do {
-							searchSchedule();
-							printf("Do you want to search another schedule? (Y/N): ");
-							scanf(" %c", &choice);
-						} while (choice == 'Y' || choice == 'y');
+						searchSchedule();
 						break;
 					case 3:
 						do {
@@ -1501,8 +1511,8 @@ void schedulingMain() {
 						break;
 					case 4:
 						displaySchedule();
-						printf("Do you want to back to menu? (Y/N): ");
-						scanf(" %c", &choice);
+						printf("\n");
+						system("pause");
 						break;
 					case 5:
 						do {
@@ -1513,12 +1523,12 @@ void schedulingMain() {
 						break;
 					case 6:
 						scheduleReport(&mode);
-						printf("Do you want to go back to the schedule menu? (Y/N): ");
-						scanf(" %c", &choice);
+						system("pause");
 						break;
 					case 7:
-
 						break;
+					case 8:
+						main();
 					default:
 						printf("Invalid option\n");
 						break;
@@ -1549,40 +1559,42 @@ void memberVerify(int* mode) {
 	} Booking;
 
 	struct Member {
-		char frontMemberID, name[30], passwordrec[10], gender, IC[15], contactNumber[12];
+		char frontMemberID, name[30], gender, IC[17], contactNumber[12], passRecovery[30];
 		int password, backMemberID;
 		Booking booking;
 	};
 
 	int memberID, password;
 	struct Member member;
-	char cnt;
+	char cnt = 'y';
 	int found = 0;
 
 	FILE* fp;
 	fp = fopen("member.txt", "r");
-	system("cls");
 
 	if (fp == NULL) {
-		printf("Unable to open file!\n");
+		printf("No member record!\n");
 		system("pause");
 		return;
 	}
 
 	do {
 		system("cls");
+		scheduleLogo();
 		printf("=================================\n");
 		printf("         Member Mode\n");
 		printf("=================================\n");
 		printf("Enter Your Member ID: M");
+		rewind(stdin);
 		scanf("%d", &memberID);
 		printf("Enter password: ");
+		rewind(stdin);
 		scanf("%d", &password);
 
 		rewind(fp); // reset file pointer to the beginning
 
 		while (!feof(fp)) {
-			fscanf(fp, "M%d | %[^|]| %d | %c | %[^|]| %[^\n]\n", &member.backMemberID, &member.name, &member.password, &member.gender, &member.IC, &member.contactNumber);
+			fscanf(fp, "M%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
 
 			if (memberID == member.backMemberID && password == member.password) {
 				found = 1;
@@ -1594,18 +1606,19 @@ void memberVerify(int* mode) {
 		}
 
 		if (found == 1) {
-			memberLogin(mode);
+			memberLogin(&mode);
+			return;
 		}
 		else {
-			printf("Invalid Member ID or Password\n");
+			printf("\nInvalid Member ID or Password\n");
 			printf("Invalid ID or Password, please try again\n\n");
 			printf("Try again --------- Y\n");
 			printf("Back -------------- N\n");
 			printf("Enter your selection: ");
-			scanf(" %c", &cnt);
 			rewind(stdin);
+			scanf(" %c", &cnt);
 		}
-	} while (cnt == 'y' || cnt == 'Y');//got error while returning or something
+	} while (cnt == 'y' || cnt == 'Y');
 
 	fclose(fp);
 }
@@ -1617,6 +1630,7 @@ void memberLogin(int* mode) {
 
 	do {
 		system("cls");
+		scheduleLogo();
 		printf("=================================\n");
 		printf("         Login Successful\n");
 		printf("=================================\n");
@@ -1628,20 +1642,19 @@ void memberLogin(int* mode) {
 		printf("Search Schedule ------------ 1\n");
 		printf("Display Schedule ----------- 2\n");
 		printf("Back ----------------------- 3\n");
-		printf("Main Menu ------------------ 4\n");
-		printf("Enter Selection: ");
+		printf("Main Menu ------------------ 4\n\n");
+		printf("Enter Number --------------- ");
+		rewind(stdin);
 		scanf("%d", &choice);
 
 		switch (choice) {
 		case 1:
-			do {
-				searchSchedule();
-				printf("Do you want to search another schedule? (Y/N): ");
-				scanf(" %c", &choice);
-			} while (choice == 'Y' || choice == 'y');
+			searchSchedule(&mode);
 			break;
 		case 2:
 			displaySchedule();
+			printf("\n");
+			system("pause");
 			break;
 		case 3:
 			return;
@@ -1653,16 +1666,7 @@ void memberLogin(int* mode) {
 			break;
 		}
 
-		char backChoice;
-		printf("Return Back? (Y/N): ");
-		scanf(" %c", &backChoice);
-
-		if (backChoice == 'Y' || backChoice == 'y') {
-			memberLogin(mode);
-			return;
-		}
-
-	} while (1); // unlimited loop 
+	} while (1); // infinity loop 
 }
 
 
@@ -1684,16 +1688,20 @@ void staffVerify() {
 	stf = fopen("staff.bin", "rb");
 
 	if (stf == NULL) {
-		printf("Unabale to open file");
-		return;
+		printf("No staff record!\n");
+		system("pause");
+		schedulingMain();
 	}
 
 	system("cls");
+	scheduleLogo();
 	printf("=================================\n");
 	printf("         Staff Mode\n");
 	printf("=================================\n");
-	printf("Enter Your Staff Id: S");
+	printf("Enter Your Staff ID: S");
+	rewind(stdin);
 	scanf("%d", &staffID);
+	rewind(stdin);
 	printf("Enter password: ");
 	scanf("%s", password);
 
@@ -1712,6 +1720,7 @@ void staffVerify() {
 		printf("Enter your selection: ");
 		rewind(stdin);
 		scanf("%c", &cont);
+		rewind(stdin);
 		if (cont == 'y' || cont == 'Y') {
 			staffVerify();
 		}
@@ -1719,37 +1728,47 @@ void staffVerify() {
 			schedulingMain();
 		}
 		else {
-			printf("Invalid option, enter to continue: ");
+			rewind(stdin);
+			printf("Invalid option!\n");
 			system("pause");
-			return;
+			staffVerify();
 		}
 	}
 
+	rewind(stdin);
 	num = 0;
 }
 
 
 void scheduleMenu(int* mode) {
+	int selection;
 	do {
-		system("cls");
-		printf("=================================\n");
-		printf("         Login Successful\n");
-		printf("=================================\n");
-		printf("         Staff Mode\n");
-		printf("=================================\n");
-		printf("       Select Schedule Function\n");
-		printf("=================================\n\n");
+		do {
+			system("cls");
+			scheduleLogo();
+			printf("=================================\n");
+			printf("         Login Successful\n");
+			printf("=================================\n");
+			printf("         Staff Mode\n");
+			printf("=================================\n");
+			printf("       Select Schedule Function\n");
+			printf("=================================\n\n");
 
-		printf("Add Schedule --------------- 1\n");
-		printf("Search Schedule ------------ 2\n");
-		printf("Modify Schedule ------------ 3\n");
-		printf("Display Schedule ----------- 4\n");
-		printf("Delete Schedule ------------ 5\n");
-		printf("Schedule Report ------------ 6\n");
-		printf("Back ----------------------- 7\n");
-		printf("Main Menu------------------- 8\n\n");
-		printf("Enter Number --------------- ");
-		scanf("%d", mode);
+			printf("Add Schedule --------------- 1\n");
+			printf("Search Schedule ------------ 2\n");
+			printf("Modify Schedule ------------ 3\n");
+			printf("Display Schedule ----------- 4\n");
+			printf("Delete Schedule ------------ 5\n");
+			printf("Schedule Report ------------ 6\n");
+			printf("Back ----------------------- 7\n");
+			printf("Main Menu------------------- 8\n\n");
+			printf("Enter Number --------------- ");
+			rewind(stdin);
+			scanf("%d", &selection);
+		} while (selection < 1 || selection > 8);
+
+		*mode = selection; // assign the value of selection to mode
+
 	} while (*mode != 1 && *mode != 2 && *mode != 3 && *mode != 4 && *mode != 5 && *mode != 6 && *mode != 7 && *mode != 8);
 
 	return;
@@ -1759,11 +1778,10 @@ void scheduleMenu(int* mode) {
 
 int addSchedule(int currentTrainID) {
 	system("cls");
+	scheduleLogo();
 	printf("==============================\n");
 	printf("       Add Schedule\n");
 	printf("==============================\n\n");
-
-	TrainSchedule schedule;
 
 	FILE* fptr = fopen("train_schedule.txt", "a");
 
@@ -1779,6 +1797,8 @@ int addSchedule(int currentTrainID) {
 		printf("Train ID: %c%d\n", TRAIN_FRONT_ID, schedule.trainID);
 		return currentTrainID;
 	}
+
+	schedule.trainID = 1000;
 
 	while (!feof(read)) {
 		fscanf(read, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
@@ -1805,15 +1825,52 @@ int addSchedule(int currentTrainID) {
 	printf("Enter Arrival Station: ");
 	rewind(stdin);
 	scanf("%s", schedule.arrivalStation);
-	printf("Enter Departure Date (DD/MM/YYYY): ");
-	rewind(stdin);
-	scanf("%d/%d/%d", &schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year);
-	printf("Enter Arrival Date (DD/MM/YYYY): ");
-	rewind(stdin);
-	scanf("%d/%d/%d", &schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year);
 
+	do {
+		printf("Enter Departure Date (DD/MM/YYYY): ");
+		rewind(stdin);
+
+		// compares the return value of scanf with 3
+		if (scanf("%d/%d/%d", &schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year) != 3) {
+			printf("Invalid input format. Please try again.\n");
+			rewind(stdin); // clear input buffer
+			continue;
+		}
+
+		// validate day, month, and year individually
+		if (schedule.departureDate.day < 1 || schedule.departureDate.day > 31 ||
+			schedule.departureDate.month < 1 || schedule.departureDate.month > 12 ||
+			schedule.departureDate.year != LATEST_YEAR) {
+			printf("Invalid date. Please enter a valid date.\n");
+			continue;
+		}
+
+		break;
+	} while (1);
+
+	do {
+		printf("Enter Arrival Date (DD/MM/YYYY): ");
+		rewind(stdin);
+		if (scanf("%d/%d/%d", &schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year) != 3) {
+			printf("Invalid input format. Please try again.\n");
+			rewind(stdin); // clear input buffer
+			continue;
+		}
+
+		// validate day, month, and year individually
+		if (schedule.arrivalDate.day < 1 || schedule.arrivalDate.day > 31 ||
+			schedule.arrivalDate.month < 1 || schedule.arrivalDate.month > 12 ||
+			schedule.arrivalDate.year != LATEST_YEAR) {
+			printf("Invalid date. Please enter a valid date.\n");
+			continue;
+		}
+
+		break;
+	} while (1);
+
+
+	//initialize the time to 0
 	schedule.departureTime.hour = 0, schedule.departureTime.min = 0;
-
 	do {
 		printf("Enter Departure Time 24 hours (HH:MM): ");
 		rewind(stdin);
@@ -1826,6 +1883,7 @@ int addSchedule(int currentTrainID) {
 	} while (schedule.departureTime.hour < 0 || schedule.departureTime.hour >= 24 ||
 		schedule.departureTime.min < 0 || schedule.departureTime.min >= 60);
 
+	//initialize the time to 0
 	schedule.arrivalTime.hour = 0, schedule.arrivalTime.min = 0;
 	do {
 		printf("Enter Arrival Time 24 hours (HH:MM): ");
@@ -1839,13 +1897,18 @@ int addSchedule(int currentTrainID) {
 	} while (schedule.arrivalTime.hour < 0 || schedule.arrivalTime.hour >= 24 ||
 		schedule.arrivalTime.min < 0 || schedule.arrivalTime.min >= 60);
 
-
-	schedule.availableSeats = 400;
-	printf("Available Seats: %d\n", schedule.availableSeats);
 	printf("Enter ticket price: RM");
+	rewind(stdin);
 	scanf("%f", &schedule.ticketPrice);
 
-
+	char confirm; // check confirm
+	printf("Confirm add schedule? (Y/N): ");
+	scanf(" %c", &confirm);
+	if (confirm != 'Y' && confirm != 'y') {
+		printf("\nCancelled\n");
+		fclose(fptr);
+		return schedule.trainID;
+	}
 
 	fprintf(fptr, "%c%d, %s, %s, %02d/%02d/%04d, %02d/%02d/%04d, %02d:%02d, %02d:%02d, %d, %.2f\n",
 		TRAIN_FRONT_ID,
@@ -1860,70 +1923,265 @@ int addSchedule(int currentTrainID) {
 	return schedule.trainID;
 }
 
-
-
 void searchSchedule() {
-	system("cls");
-	printf("==============================\n");
-	printf("       Search Schedule\n");
-	printf("==============================\n\n");
-	int trainID;
+	int display = 0; //0 mean no need to display when do call the function availble seats, only do calculation
+	availableSeats(display);
+	int menu, departureDay, departureMonth, departureYear, arrivalDay, arrivalMonth, arrivalYear;
+	char cont;
+	char departureStation[50], arrivalStation[50];
+
+	int found = 0;
+
 	FILE* fptr = fopen("train_schedule.txt", "r");
 	if (fptr == NULL) {
 		printf("Error opening file\n");
 		return;
 	}
 
-	printf("Enter Train ID to search: T");
-	scanf("%d", &trainID);
+	system("cls");
+	scheduleLogo();
+	printf("==============================\n");
+	printf("        Search Schedule\n");
+	printf("==============================\n\n");
+	printf("Select an option:\n");
+	printf("1. Search By Train ID\n");
+	printf("2. Search By Destination\n");
+	printf("3. Search By Date\n");
+	printf("4. Back\n\n");
+	printf("Enter your choice: ");
+	rewind(stdin);
+	scanf("%d", &menu);
 
-	TrainSchedule schedule;
-	int found = 0;
+	switch (menu) {
+	case 1:
+		do {
+			system("cls");
+			scheduleLogo();
+			printf("==============================\n");
+			printf("       Schedule By Train ID\n");
+			printf("==============================\n\n");
+			int trainID;
+			FILE* fptr = fopen("train_schedule.txt", "r");
+			if (fptr == NULL) {
+				printf("Error opening file\n");
+				exit(-1);
+			}
 
-	printf("\nTrain Schedule:\n");
-	printf("===========================================================================================================\n");
-	printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
-	printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
-	printf("===========================================================================================================\n");
+			printf("Enter Train ID to search: T");
+			scanf("%d", &trainID);
 
-	while (!feof(fptr)) {
-		fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
-			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
-			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
-			&schedule.departureTime.hour, &schedule.departureTime.min,
-			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
-			&schedule.availableSeats, &schedule.ticketPrice);
+			int found = 0;
+			printf("\n");
+			printf("===========================================================================================================\n");
+			printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
+			printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
+			printf("===========================================================================================================\n");
 
-		if (trainID == schedule.trainID) {
-			found = 1;
-			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
-				TRAIN_FRONT_ID,
-				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
-				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
-				schedule.departureTime.hour, schedule.departureTime.min,
-				schedule.arrivalTime.hour, schedule.arrivalTime.min,
-				schedule.availableSeats, schedule.ticketPrice);
+			//reset the file pointer for reading from beginning
+			rewind(fptr);
+
+			while (!feof(fptr)) {
+				fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+					&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+					&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+					&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+					&schedule.departureTime.hour, &schedule.departureTime.min,
+					&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+					&schedule.availableSeats, &schedule.ticketPrice);
+
+				if (trainID == schedule.trainID) {
+					found = 1;
+					printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
+						TRAIN_FRONT_ID,
+						schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+						schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+						schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+						schedule.departureTime.hour, schedule.departureTime.min,
+						schedule.arrivalTime.hour, schedule.arrivalTime.min,
+						schedule.availableSeats, schedule.ticketPrice);
+				}
+
+			}
+
+			fclose(fptr);
+
+			if (!found) {
+				printf("Train ID '%c%d' not found\n", TRAIN_FRONT_ID, trainID);
+			}
+
+			printf("\nDo you want continue search another schedule?(Y/N): ");
+			rewind(stdin);
+			cont = getchar();
+			printf("\n");
+
+
+		} while (cont == 'y' || cont == 'Y');
+
+		if (cont == 'n' || cont == 'N') {
+			searchSchedule();
 		}
 
-	}
+		break;
+	case 2:
+		do {
+			system("cls");
+			scheduleLogo();
+			printf("===============================\n");
+			printf("       Schedule By Destination\n");
+			printf("===============================\n\n");
+			printf("Enter the departure station: ");
+			rewind(stdin);
+			scanf("%[^\n]", departureStation);
+			printf("Enter the arrival station: ");
+			rewind(stdin);
+			scanf("%[^\n]", arrivalStation);
 
-	if (!found) {
-		printf("Train ID '%c%d' not found\n", TRAIN_FRONT_ID, trainID);
-	}
+			FILE* fptr = fopen("train_schedule.txt", "r");
+			if (fptr == NULL) {
+				printf("Error opening file\n");
+				return;
+			}
 
-	fclose(fptr);
+			int found = 0;
+
+			printf("\n");
+			printf("============================================================================================================\n");
+			printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
+			printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
+			printf("============================================================================================================\n");
+
+			rewind(fptr);
+
+			while (!feof(fptr)) {
+				fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+					&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+					&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+					&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+					&schedule.departureTime.hour, &schedule.departureTime.min,
+					&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+					&schedule.availableSeats, &schedule.ticketPrice);
+
+				if (strcmp(departureStation, schedule.departureStation) == 0 && strcmp(arrivalStation, schedule.arrivalStation) == 0) {
+					found = 1;
+					printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
+						TRAIN_FRONT_ID,
+						schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+						schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+						schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+						schedule.departureTime.hour, schedule.departureTime.min,
+						schedule.arrivalTime.hour, schedule.arrivalTime.min,
+						schedule.availableSeats, schedule.ticketPrice);
+				}
+			}
+
+			fclose(fptr);
+
+			if (!found) {
+				printf("No record\n");
+			}
+
+			printf("\nDo you want continue search another schedule?(Y/N): ");
+			rewind(stdin);
+			cont = getchar();
+			printf("\n");
+		} while (cont == 'y' || cont == 'Y');
+
+		if (cont == 'n' || cont == 'N') {
+			searchSchedule();
+		}
+
+		break;
+	case 3:
+		do {
+			system("cls");
+			scheduleLogo();
+			printf("==============================\n");
+			printf("       Schedule By Date\n");
+			printf("==============================\n\n");
+			printf("Enter the departure date (DD/MM/YYYY): ");
+			rewind(stdin);
+			scanf("%d/%d/%d", &departureDay, &departureMonth, &departureYear);
+			printf("Enter the arrival date (DD/MM/YYYY): ");
+			rewind(stdin);
+			scanf("%d/%d/%d", &arrivalDay, &arrivalMonth, &arrivalYear);
+
+			FILE* fptr = fopen("train_schedule.txt", "r");
+			if (fptr == NULL) {
+				printf("Error opening file\n");
+				return;
+			}
+
+			int found = 0;
+
+			printf("\n");
+			printf("============================================================================================================\n");
+			printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
+			printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
+			printf("============================================================================================================\n");
+
+			//reset the file pointer for reading from beginning
+			rewind(fptr);
+
+			// read data until end of file
+			while (!feof(fptr)) {
+				fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+					&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+					&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+					&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+					&schedule.departureTime.hour, &schedule.departureTime.min,
+					&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+					&schedule.availableSeats, &schedule.ticketPrice);
+				//find the record by date and make calculation of total train schedule and total price 
+				if (schedule.departureDate.day == departureDay && schedule.departureDate.month == departureMonth && schedule.departureDate.year == departureYear
+					&& schedule.arrivalDate.day == arrivalDay && schedule.arrivalDate.month == arrivalMonth && schedule.arrivalDate.year == arrivalYear) {
+					found = 1;
+					printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
+						TRAIN_FRONT_ID,
+						schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+						schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+						schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+						schedule.departureTime.hour, schedule.departureTime.min,
+						schedule.arrivalTime.hour, schedule.arrivalTime.min,
+						schedule.availableSeats, schedule.ticketPrice);
+				}
+			}
+
+			fclose(fptr);
+
+			if (!found) {
+				printf("No record\n");
+			}
+
+			printf("\nDo you want continue search another schedule?(Y/N): ");
+			rewind(stdin);
+			cont = getchar();
+			printf("\n");
+		} while (cont == 'y' || cont == 'Y');
+
+		if (cont == 'n' || cont == 'N') {
+			searchSchedule();
+		}
+		break;
+	case 4:
+		//exit
+		return;
+	default:
+		printf("Invalid choice. Please try again.\n");
+		break;
+	}
 }
 
-
 void modifySchedule() {
+	int display = 0; //pass 0 to the available seats for only do calculation withou print anything
+	availableSeats(display);
 	system("cls");
+	scheduleLogo();
 	printf("==============================\n");
 	printf("       Modify Schedule\n");
 	printf("==============================\n\n");
 	int trainID;
 	printf("Enter Train ID to modify: T");
+	rewind(stdin);
 	scanf("%d", &trainID);
 
 	FILE* fptr = fopen("train_schedule.txt", "r");
@@ -1931,7 +2189,7 @@ void modifySchedule() {
 
 	if (fptr == NULL || temp == NULL) {
 		printf("Error opening file\n");
-		return;
+		exit(-1);
 	}
 
 	printf("\nTrain Schedule:\n");
@@ -1940,7 +2198,6 @@ void modifySchedule() {
 	printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
 	printf("===========================================================================================================\n");
 
-	TrainSchedule schedule;
 	int found = 0;
 
 	while (!feof(fptr)) {
@@ -1956,20 +2213,26 @@ void modifySchedule() {
 			found = 1;
 			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
 				TRAIN_FRONT_ID,
-				schedule.trainID,
 				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
 				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
 				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
 				schedule.departureTime.hour, schedule.departureTime.min,
 				schedule.arrivalTime.hour, schedule.arrivalTime.min,
 				schedule.availableSeats, schedule.ticketPrice);
+
 			printf("\nEnter New Departure Station: ");
+			rewind(stdin);
 			scanf(" %[^\n]", schedule.departureStation);
+			rewind(stdin);
 			printf("Enter New Arrival Station: ");
+			rewind(stdin);
 			scanf(" %[^\n]", schedule.arrivalStation);
+			rewind(stdin);
 			printf("Enter New Departure Date (DD/MM/YYYY): ");
+			rewind(stdin);
 			scanf("%d/%d/%d", &schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year);
 			printf("Enter New Arrival Date (DD/MM/YYYY): ");
+			rewind(stdin);
 			scanf("%d/%d/%d", &schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year);
 
 			do {
@@ -1998,6 +2261,7 @@ void modifySchedule() {
 				schedule.arrivalTime.min < 0 || schedule.arrivalTime.min >= 60);
 
 			printf("Enter ticket price: ");
+			rewind(stdin);
 			scanf("%f", &schedule.ticketPrice);
 
 			char confirm; // check confirm
@@ -2027,27 +2291,29 @@ void modifySchedule() {
 	fptr = fopen("train_schedule.txt", "w");
 	temp = fopen("temp.txt", "r");
 
-	while (!feof(temp)) {
-		fscanf(temp, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
-			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
-			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
-			&schedule.departureTime.hour, &schedule.departureTime.min,
-			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
-			&schedule.availableSeats, &schedule.ticketPrice);
+	if (found) {
+		while (!feof(temp)) {
+			fscanf(temp, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+				&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+				&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+				&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+				&schedule.departureTime.hour, &schedule.departureTime.min,
+				&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+				&schedule.availableSeats, &schedule.ticketPrice);
 
-		fprintf(fptr, "%c%d, %s, %s, %02d/%02d/%04d, %02d/%02d/%04d, %02d:%02d, %02d:%02d, %d, %.2f\n",
-			TRAIN_FRONT_ID,
-			schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-			schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
-			schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
-			schedule.departureTime.hour, schedule.departureTime.min,
-			schedule.arrivalTime.hour, schedule.arrivalTime.min,
-			schedule.availableSeats, schedule.ticketPrice);
+			fprintf(fptr, "%c%d, %s, %s, %02d/%02d/%04d, %02d/%02d/%04d, %02d:%02d, %02d:%02d, %d, %.2f\n",
+				TRAIN_FRONT_ID,
+				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+				schedule.departureTime.hour, schedule.departureTime.min,
+				schedule.arrivalTime.hour, schedule.arrivalTime.min,
+				schedule.availableSeats, schedule.ticketPrice);
+		}
 	}
 
 	if (!found) {
-		printf("Train ID '%c%d' not found\n", TRAIN_FRONT_ID, trainID);
+		printf("Train ID '%c%d' not found\n\n", TRAIN_FRONT_ID, trainID);
 	}
 	else {
 		printf("\nSchedule modified successfully\n");
@@ -2056,16 +2322,67 @@ void modifySchedule() {
 	fclose(temp);
 }
 
+void displaySchedule() {
+	FILE* fptr;
+	fptr = fopen("train_schedule.txt", "r");
+	int display = 1; // this is pass to available seats to do validation for display the schedule
+	availableSeats(display);
+
+	if (fptr == NULL) {
+		printf("Error opening file\n");
+		return;
+	}
+
+	system("cls");
+	scheduleLogo();
+	printf("==============================\n");
+	printf("       Display Schedule\n");
+	printf("==============================\n");
+	printf("\nTrain Schedule:\n");
+	printf("============================================================================================================\n");
+	printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
+	printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
+	printf("============================================================================================================\n");
+
+	if (fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+		&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+		&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+		&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+		&schedule.departureTime.hour, &schedule.departureTime.min,
+		&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+		&schedule.availableSeats, &schedule.ticketPrice) == EOF) {
+		printf("No record\n");
+		return;
+	}
+
+	//reset the file pointer for reading from beginning
+	rewind(fptr);
+
+	if (fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+		&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+		&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+		&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+		&schedule.departureTime.hour, &schedule.departureTime.min,
+		&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+		&schedule.availableSeats, &schedule.ticketPrice) == EOF) {
+		printf("No record!\n");
+		fclose(fptr);
+		rewind(fptr);
+		return;
+	}
+	else availableSeats(display);
+
+}
 
 void deleteSchedule() {
+	int trainID;
+	int display = 0; //pass 0 to the displaySchedule for only do calculation withou print anything
+	availableSeats(display);
 	system("cls");
+	scheduleLogo();
 	printf("==============================\n");
 	printf("       Delete Schedule\n");
 	printf("==============================\n\n");
-
-	int trainID;
-	printf("Enter Train ID to delete: T");
-	scanf("%d", &trainID);
 
 	FILE* fptr = fopen("train_schedule.txt", "r");
 	FILE* temp = fopen("temp.txt", "w");
@@ -2075,13 +2392,31 @@ void deleteSchedule() {
 		return;
 	}
 
+
+	printf("Enter Train ID to delete: T");
+	rewind(stdin);
+	scanf("%d", &trainID);
+
 	printf("\nTrain Schedule:\n");
-	printf("===========================================================================================================\n");
+	printf("============================================================================================================\n");
 	printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
 	printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
-	printf("===========================================================================================================\n");
+	printf("============================================================================================================\n");
 
-	TrainSchedule schedule;
+	if (fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+		&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+		&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+		&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+		&schedule.departureTime.hour, &schedule.departureTime.min,
+		&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+		&schedule.availableSeats, &schedule.ticketPrice) == EOF) {
+		printf("No record\n\n");
+		return;
+	}
+
+	//reset the file pointer for reading from beginning
+	rewind(fptr);
+
 	int found = 0;
 
 	while (!feof(fptr)) {
@@ -2106,6 +2441,7 @@ void deleteSchedule() {
 
 			char confirm;
 			printf("Confirm delete (Y/N): ");
+			rewind(stdin);
 			scanf(" %c", &confirm);
 			if (confirm != 'Y' && confirm != 'y') {
 				printf("\nCancelled\n");
@@ -2132,7 +2468,8 @@ void deleteSchedule() {
 	temp = fopen("temp.txt", "r");
 
 	while (!feof(temp)) {
-		fscanf(temp, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+		//here is store the data type has been read to the integer variable
+		int readAll = fscanf(temp, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
 			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
 			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
 			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
@@ -2140,17 +2477,21 @@ void deleteSchedule() {
 			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
 			&schedule.availableSeats, &schedule.ticketPrice);
 
-		fprintf(fptr, "T%d, %s, %s, %02d/%02d/%04d, %02d/%02d/%04d, %02d:%02d, %02d:%02d, %d, %.2f\n",
-			schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-			schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
-			schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
-			schedule.departureTime.hour, schedule.departureTime.min,
-			schedule.arrivalTime.hour, schedule.arrivalTime.min,
-			schedule.availableSeats, schedule.ticketPrice);
+		//
+		if (readAll != EOF) {
+			fprintf(fptr, "T%d, %s, %s, %02d/%02d/%04d, %02d/%02d/%04d, %02d:%02d, %02d:%02d, %d, %.2f\n",
+				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+				schedule.departureTime.hour, schedule.departureTime.min,
+				schedule.arrivalTime.hour, schedule.arrivalTime.min,
+				schedule.availableSeats, schedule.ticketPrice);
+		}
 	}
 
 	fclose(fptr);
 	fclose(temp);
+	remove("temp.txt");
 
 	if (found) {
 		printf("\nSchedule deleted successfully\n");
@@ -2160,61 +2501,72 @@ void deleteSchedule() {
 	}
 }
 
+void availableSeats(int display) {
+	FILE* scheduleFiles;
+	FILE* bookingFiles;
+	FILE* temp;
 
-void displaySchedule() {
-	system("cls");
-	printf("==============================\n");
-	printf("       Display Schedule\n");
-	printf("==============================\n\n");
-	FILE* fptr = fopen("train_schedule.txt", "r");
-	if (fptr == NULL) {
-		printf("Error opening file\n");
+	scheduleFiles = fopen("train_schedule.txt", "r");
+	bookingFiles = fopen("Booking.bin", "rb");
+	temp = fopen("temp.txt", "w"); //this to update the available seat
+
+	if (bookingFiles == NULL || scheduleFiles == NULL || temp == NULL) {
+		printf("Error opening files.\n");
 		return;
 	}
 
-	char checkRecord[7];
-	TrainSchedule schedule;
-
-	printf("\nTrain Schedule:\n");
-	printf("===========================================================================================================\n");
-	printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
-	printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
-	printf("===========================================================================================================\n");
-
-	//here is to check the file record, if no record then return
-	if (fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+	if (fscanf(scheduleFiles, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
 		&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
 		&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
 		&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
 		&schedule.departureTime.hour, &schedule.departureTime.min,
 		&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
 		&schedule.availableSeats, &schedule.ticketPrice) == EOF) {
-		printf("No records found in the schedule.\n");
-		fclose(fptr);
+		printf("No record\n");
 		return;
 	}
 
-	//if got record, the value will store to variable, so print out the record first and continue with while loop do display next record
-	printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
-		TRAIN_FRONT_ID,
-		schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-		schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
-		schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
-		schedule.departureTime.hour, schedule.departureTime.min,
-		schedule.arrivalTime.hour, schedule.arrivalTime.min,
-		schedule.availableSeats, schedule.ticketPrice);
+	//reset the file pointer for reading from beginning
+	rewind(scheduleFiles);
 
-	//display the next record until end file
-	while (!feof(fptr)) {
-		fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
-			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
-			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
-			&schedule.departureTime.hour, &schedule.departureTime.min,
-			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
-			&schedule.availableSeats, &schedule.ticketPrice);
+	// initialize the total booked seats to 0 first
+	int totalBookedSeats[MAX_BOOKING] = { 0 };
+	int c = 0; // c = customer, array store infromation start from customer 0, and continue...
+	while (fread(&memberTemp.backMemberID, sizeof(int), 1, bookingFiles) == 1 &&
+		fread(&memberTemp.book[c], sizeof(Booking), 1, bookingFiles) == 1) {
+		//this is calculate total booked seats for each train 
+		//totalBookedSeats[T1001] values is 0 then += trainId.quantity
+		totalBookedSeats[memberTemp.book[c].trains.trainID] += memberTemp.book[c].quantity;
+		c++;
+	}
+	fclose(bookingFiles);
 
-		printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
+	// Display schedule with updated available seats
+	while (fscanf(scheduleFiles, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+		&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+		&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+		&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+		&schedule.departureTime.hour, &schedule.departureTime.min,
+		&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+		&schedule.availableSeats, &schedule.ticketPrice) != EOF) {
+
+		// Calculate available seats
+		schedule.availableSeats = MAX_AVAILABLE_SEATS - totalBookedSeats[schedule.trainID];
+
+		// Print schedule and update available seats if display is 1
+		if (display == 1) {
+			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
+				TRAIN_FRONT_ID,
+				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+				schedule.departureTime.hour, schedule.departureTime.min,
+				schedule.arrivalTime.hour, schedule.arrivalTime.min,
+				schedule.availableSeats, schedule.ticketPrice);
+		}
+
+		// Write schedule with available seats to file
+		fprintf(temp, "%c%d, %s, %s, %02d/%02d/%04d, %02d/%02d/%04d, %02d:%02d, %02d:%02d, %d, %.2f\n",
 			TRAIN_FRONT_ID,
 			schedule.trainID, schedule.departureStation, schedule.arrivalStation,
 			schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
@@ -2224,60 +2576,103 @@ void displaySchedule() {
 			schedule.availableSeats, schedule.ticketPrice);
 	}
 
-	fclose(fptr);
+	fclose(scheduleFiles);
+	fclose(temp);
+
+	scheduleFiles = fopen("train_schedule.txt", "w");
+	temp = fopen("temp.txt", "r");
+
+	while (!feof(temp)) {
+		fscanf(temp, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+			&schedule.departureTime.hour, &schedule.departureTime.min,
+			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+			&schedule.availableSeats, &schedule.ticketPrice);
+		fprintf(scheduleFiles, "%c%d, %s, %s, %02d/%02d/%04d, %02d/%02d/%04d, %02d:%02d, %02d:%02d, %d, %.2f\n",
+			TRAIN_FRONT_ID,
+			schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+			schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+			schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+			schedule.departureTime.hour, schedule.departureTime.min,
+			schedule.arrivalTime.hour, schedule.arrivalTime.min,
+			schedule.availableSeats, schedule.ticketPrice);
+	}
+
+	fclose(scheduleFiles);
+	fclose(temp);
 }
 
 
-void scheduleReport(int* sreport) {
-
-	int menu, day, month, year;
+void scheduleReport() {
+	int selection;
+	int totalTrains = 0, totalSeats = 0, maxSeats = 0;
+	float totalTicketPrice = 0, averageTicketPrice = 0;
+	int startMonth, startYear, endMonth, endYear;
 	char cont;
-	char station[50];
 
-	TrainSchedule schedule;
-	int found = 0;
-	int totalSchedule = 0;
-	float totalRevenue = 0.0;
+	int display = 0; // to call the available seats function and update the lates available seats without print any information
+	availableSeats(display);
 
-	FILE* fptr = fopen("train_schedule.txt", "r");
-	if (fptr == NULL) {
+	FILE* scheduleFiles, * fptr;
+
+	scheduleFiles = fopen("train_schedule.txt", "r");
+	fptr = fopen("train_schedule_report.txt", "w");
+
+	if (scheduleFiles == NULL || fptr == NULL) {
 		printf("Error opening file\n");
 		return;
 	}
 
 	system("cls");
+	scheduleLogo();
 	printf("==============================\n");
 	printf("       Schedule Report\n");
-	printf("==============================\n\n");
-	printf("Select an option:\n");
-	printf("1. View overall report\n");
-	printf("2. Search report based on departure station\n");
-	printf("3. Search report based on departure date\n");
-	printf("4. Back\n");
-	printf("Enter your choice: ");
-	scanf("%d", &menu);
+	printf("==============================\n");
+	printf("1. Overal Schedule Report\n");
+	printf("2. Schedule Report By Month\n");
+	printf("3. Back\n\n");
+	printf("Enter your selection: ");
+	rewind(stdin);
+	scanf("%d", &selection);
 
-	switch (menu) {
-	case 1:
-		totalSchedule = 0;
-		totalRevenue = 0.0;
+	if (selection == 1) {
 		system("cls");
-		printf("==============================\n");
-		printf("     Overal Schedule Report  \n");
-		printf("==============================\n\n");
-		printf("===========================================================================================================\n");
+		scheduleLogo();
+		printf("================================================\n");
+		printf("                 Overal Train Schedule Report\n");
+		printf("============================================================================================================\n");
 		printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
 		printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
-		printf("===========================================================================================================\n");
+		printf("============================================================================================================\n");
 
-		// read data until end of file
-		while (fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+		if (fscanf(scheduleFiles, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
 			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
 			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
 			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
 			&schedule.departureTime.hour, &schedule.departureTime.min,
 			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
-			&schedule.availableSeats, &schedule.ticketPrice) != EOF) {
+			&schedule.availableSeats, &schedule.ticketPrice) == EOF) {
+			printf("No record\n\n");
+			return;
+		}
+
+		//reset the file pointer for reading from beginning
+		rewind(scheduleFiles);
+
+		//initialize again the value before calculation
+		totalTrains = 0, totalSeats = 0, maxSeats = 0;
+		totalTicketPrice = 0, averageTicketPrice = 0;
+
+		while (!feof(scheduleFiles)) {
+			fscanf(scheduleFiles, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+				&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+				&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+				&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+				&schedule.departureTime.hour, &schedule.departureTime.min,
+				&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+				&schedule.availableSeats, &schedule.ticketPrice);
 
 			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
 				TRAIN_FRONT_ID,
@@ -2287,240 +2682,155 @@ void scheduleReport(int* sreport) {
 				schedule.departureTime.hour, schedule.departureTime.min,
 				schedule.arrivalTime.hour, schedule.arrivalTime.min,
 				schedule.availableSeats, schedule.ticketPrice);
-			totalSchedule++;
-			totalRevenue += schedule.ticketPrice;
+
+			// calculate total ticket price and total seats
+			totalTrains++;
+			totalTicketPrice += schedule.ticketPrice;
+			totalSeats += schedule.availableSeats;
 
 		}
 
-		printf("\n\nTotal number of schedules: %d\n", totalSchedule);
-		printf("Total revenue generated: RM%.2f\n\n", totalRevenue);
+		// calculate average ticket price
+		if (totalTrains > 0) {
+			averageTicketPrice = totalTicketPrice / totalTrains;
+		}
 
+		printf("------------------------------------------------------------------------------------------------------------\n\n");
+		printf("==================== Generated Report As Below ====================\n\n");
+		printf("Overal Schedule Report\n");
+		printf("----------------------\n");
+		printf("Total Trains: %d\n", totalTrains);
+		printf("Total Seats Available: %d\n", totalSeats);
+		printf("Average Ticket Price: %.2f\n", averageTicketPrice);
+		printf("Max Seats on a Train: %d\n\n", MAX_AVAILABLE_SEATS);
+
+		printf("Save the report?\n");
+		printf("Yes or No (Y/N): ");
+		rewind(stdin);
+		scanf("%c", &cont);
+		if (cont == 'y' || cont == 'Y') {
+			fprintf(fptr, "Overal Schedule Report\n");
+			fprintf(fptr, "----------------------\n");
+			fprintf(fptr, "Total Trains: %d\n", totalTrains);
+			fprintf(fptr, "Total Seats Available: %d\n", totalSeats);
+			fprintf(fptr, "Average Ticket Price: %.2f\n", averageTicketPrice);
+			fprintf(fptr, "Max Seats on a Train: %d\n", MAX_AVAILABLE_SEATS);
+			printf("Report Generated!\n\n");
+		}
+
+		fclose(scheduleFiles);
 		fclose(fptr);
-
-		printf("Do you want to back to schedule report menu?(Y/N):");
-		rewind(stdin);
-		cont = getchar();
-		if (cont == 'y' || cont == 'Y') {
-			scheduleReport(&sreport);
-		}
-
-		break;
-	case 2:
-		do {
-			system("cls");
-			printf("==============================\n");
-			printf("       Schedule Report By Station\n");
-			printf("==============================\n\n");
-			printf("Enter the departure station: ");
-			scanf("%s", station);
-
-			stationScheduleReport(station);
-
-			printf("\nDo you want continue search another report?(Y/N): ");
-			rewind(stdin);
-			cont = getchar();
-			printf("\n");
-		} while (cont == 'y' || cont == 'Y');
-		printf("Do you want to back to schedule report menu?(Y/N):");
-		rewind(stdin);
-		cont = getchar();
-		if (cont == 'y' || cont == 'Y') {
-			scheduleReport(&sreport);
-		}
-		break;
-	case 3:
-		do {
-			system("cls");
-			printf("==============================\n");
-			printf("       Schedule Report By Date\n");
-			printf("==============================\n\n");
-			printf("Enter the departure date (DD/MM/YYYY): ");
-			scanf("%d/%d/%d", &day, &month, &year);
-			printf("%d/%d/%d\n", day, month, year);
-			dateScheduleReport(day, month, year);
-
-			printf("\nDo you want continue search another report?(Y/N): ");
-			rewind(stdin);
-			cont = getchar();
-			printf("\n");
-		} while (cont == 'y' || cont == 'Y');
-
-	case 4:
-		//exit
-		return;
-	default:
-		printf("Invalid choice. Please try again.\n");
-		break;
 	}
+	else if (selection == 2) {
+		system("cls");
+		scheduleLogo();
+		printf("==============================\n");
+		printf("       Schedule Report\n");
+		printf("==============================\n");
 
-
-
-}
-
-
-void overalScheduleReport(int day, int month, int year) {
-	FILE* fptr = fopen("train_schedule.txt", "r");
-	if (fptr == NULL) {
-		printf("Error opening file\n");
-		return;
-	}
-
-	TrainSchedule schedule;
-	int found = 0;
-	int totalSchedule = 0;
-	float totalRevenue = 0.0;
-
-	// read data until end of file
-	while (fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
-		&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-		&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
-		&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
-		&schedule.departureTime.hour, &schedule.departureTime.min,
-		&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
-		&schedule.availableSeats, &schedule.ticketPrice) != EOF) {
-
-		//find the record by date and make calculation of total train schedule and total price 
-		if (schedule.departureDate.day == day && schedule.departureDate.month == month && schedule.departureDate.year == year) {
-			found = 1;
-			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
-				TRAIN_FRONT_ID,
-				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
-				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
-				schedule.departureTime.hour, schedule.departureTime.min,
-				schedule.arrivalTime.hour, schedule.arrivalTime.min,
-				schedule.availableSeats, schedule.ticketPrice);
-			totalSchedule++;
-			totalRevenue += schedule.ticketPrice;
-		}
-
-	}
-
-	printf("\n\nTotal number of schedules: %d\n", totalSchedule);
-	printf("Total overal revenue: RM%.2f\n", totalRevenue);
-
-	fclose(fptr);
-
-	if (!found || totalSchedule == 0) {
-		printf("\nNo record\n", day, month, year);
-	}
-
-	totalSchedule = 0;
-	totalRevenue = 0;
-}
-
-void stationScheduleReport(char station[50]) {
-	system("cls");
-	printf("======================================\n");
-	printf("  Schedule Report By Departure Station\n");
-	printf("======================================\n\n");
-
-	FILE* fptr = fopen("train_schedule.txt", "r");
-	if (fptr == NULL) {
-		printf("Error opening file\n");
-		return;
-	}
-
-	TrainSchedule schedule;
-	int found = 0;
-	int totalSchedule = 0;
-	float totalRevenue = 0.0;
-
-	printf("===========================================================================================================\n");
-	printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
-	printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
-	printf("===========================================================================================================\n");
-
-	while (!feof(fptr)) {
-		fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+		if (fscanf(scheduleFiles, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
 			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
 			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
 			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
 			&schedule.departureTime.hour, &schedule.departureTime.min,
 			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
-			&schedule.availableSeats, &schedule.ticketPrice);
-
-		if (strcmp(station, schedule.departureStation) == 0) {
-			found = 1;
-			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
-				TRAIN_FRONT_ID,
-				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
-				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
-				schedule.departureTime.hour, schedule.departureTime.min,
-				schedule.arrivalTime.hour, schedule.arrivalTime.min,
-				schedule.availableSeats, schedule.ticketPrice);
-			totalSchedule++;
-			totalRevenue += schedule.ticketPrice;
+			&schedule.availableSeats, &schedule.ticketPrice) == EOF) {
+			printf("No record\n\n");
+			return;
 		}
+
+		//reset the file pointer for reading from beginning
+		rewind(scheduleFiles);
+
+		printf("Enter start of month and year (MM/YYYY): ");
+		rewind(stdin);
+		scanf("%d/%d", &startMonth, &startYear);
+		printf("Enter end of month and year (MM//YYYY): ");
+		rewind(stdin);
+		scanf("%d/%d", &endMonth, &endYear);
+
+		system("cls");
+		printf("============================================================\n");
+		printf("                  Train Schedule Report\n");
+		printf("============================================================\n");
+		printf("                  By %02d/%04d to %02d/%04d\n", startMonth, startYear, endMonth, endYear);
+		printf("============================================================================================================\n");
+		printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
+		printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
+		printf("============================================================================================================\n");
+
+		//initialize again the value before calculation
+		totalTrains = 0, totalSeats = 0, maxSeats = 0;
+		totalTicketPrice = 0, averageTicketPrice = 0;
+
+		while (!feof(scheduleFiles)) {
+			fscanf(scheduleFiles, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
+				&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+				&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
+				&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
+				&schedule.departureTime.hour, &schedule.departureTime.min,
+				&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
+				&schedule.availableSeats, &schedule.ticketPrice);
+
+			if ((startMonth == schedule.departureDate.month && startYear == schedule.departureDate.year) || (endMonth == schedule.departureDate.month) && endYear) {
+				printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
+					TRAIN_FRONT_ID,
+					schedule.trainID, schedule.departureStation, schedule.arrivalStation,
+					schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
+					schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
+					schedule.departureTime.hour, schedule.departureTime.min,
+					schedule.arrivalTime.hour, schedule.arrivalTime.min,
+					schedule.availableSeats, schedule.ticketPrice);
+
+				// calculate total ticket price and total seats
+				totalTrains++;
+				totalTicketPrice += schedule.ticketPrice;
+				totalSeats += schedule.availableSeats;
+
+			}
+
+			// calculate average ticket price
+			if (totalTrains > 0) {
+				averageTicketPrice = totalTicketPrice / totalTrains;
+			}
+		}
+
+		printf("------------------------------------------------------------------------------------------------------------\n\n");
+		printf("==================== Generated Report As Below ====================\n\n");
+		printf("Schedule Report By %02d/%04d to %02d/%04d\n", startMonth, startYear, endMonth, endYear);
+		printf("-----------------------------------------\n");
+		printf("Total Trains: %d\n", totalTrains);
+		printf("Total Seats Available: %d\n", totalSeats);
+		printf("Average Ticket Price: %.2f\n", averageTicketPrice);
+		printf("Max Seats on a Train: %d\n\n", MAX_AVAILABLE_SEATS);
+
+		printf("Save the report?\n");
+		printf("Yes or No (Y/N): ");
+		rewind(stdin);
+		scanf("%c", &cont);
+		if (cont == 'y' || cont == 'Y') {
+			fprintf(fptr, "Schedule Report By %02d/%04d to %02d/%04d\n", startMonth, startYear, endMonth, endYear);
+			fprintf(fptr, "-----------------------------------------\n");
+			fprintf(fptr, "Total Trains: %d\n", totalTrains);
+			fprintf(fptr, "Total Seats Available: %d\n", totalSeats);
+			fprintf(fptr, "Average Ticket Price: %.2f\n", averageTicketPrice);
+			fprintf(fptr, "Max Seats on a Train: %d\n", MAX_AVAILABLE_SEATS);
+			printf("Report Generated!\n\n");
+		}
+
+		fclose(scheduleFiles);
+		fclose(fptr);
 	}
-	printf("\n\nTotal number of schedules: %d\n", totalSchedule);
-	printf("Total revenue by departure date: RM%.2f\n", totalRevenue);
-
-	fclose(fptr);
-
-	if (!found) {
-		printf("No record\n");
-	}
-}
-
-void dateScheduleReport(int day, int month, int year) {
-	system("cls");
-	printf("===================================\n");
-	printf("  Schedule Report By Departure Date\n");
-	printf("===================================\n\n");
-
-	FILE* fptr = fopen("train_schedule.txt", "r");
-	if (fptr == NULL) {
-		printf("Error opening file\n");
+	else if (selection == 3) {
 		return;
 	}
-
-	TrainSchedule schedule;
-	int found = 0;
-	int totalSchedule = 0;
-	float totalRevenue = 0.0;
-
-	printf("===========================================================================================================\n");
-	printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
-	printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
-	printf("===========================================================================================================\n");
-
-	// read data until end of file
-	while (!feof(fptr)) {
-		fscanf(fptr, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
-			&schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-			&schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year,
-			&schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year,
-			&schedule.departureTime.hour, &schedule.departureTime.min,
-			&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
-			&schedule.availableSeats, &schedule.ticketPrice);
-		//find the record by date and make calculation of total train schedule and total price 
-		if (schedule.departureDate.day == day && schedule.departureDate.month == month && schedule.departureDate.year == year) {
-			found = 1;
-			printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
-				TRAIN_FRONT_ID,
-				schedule.trainID, schedule.departureStation, schedule.arrivalStation,
-				schedule.departureDate.day, schedule.departureDate.month, schedule.departureDate.year,
-				schedule.arrivalDate.day, schedule.arrivalDate.month, schedule.arrivalDate.year,
-				schedule.departureTime.hour, schedule.departureTime.min,
-				schedule.arrivalTime.hour, schedule.arrivalTime.min,
-				schedule.availableSeats, schedule.ticketPrice);
-			totalSchedule++;
-			totalRevenue += schedule.ticketPrice;
-		}
-
-	}
-
-	printf("\n\nTotal number of schedules: %d\n", totalSchedule);
-	printf("Total revenue by departure date: RM%.2f\n", totalRevenue);
-
-	fclose(fptr);
-
-	if (!found) {
-		printf("No record\n");
+	else {
+		printf("Invalid option, please enter again\n");
+		system("pause");
+		scheduleReport();
 	}
 }
+
 
 void scheduleLogo() {
 	printf("  _____      _              _       _      \n");
@@ -2529,21 +2839,9 @@ void scheduleLogo() {
 	printf(" \\___ \\ / __| '_ \\ / _ \\/ _` | | | | |/ _ \\\n");
 	printf(" ____) | (__| | | |  __/ (_| | |_| | |  __/\n");
 	printf("|_____/ \\___|_| |_|\\___|\\__,_|\\__,_|_|\\___|\n");
-
 }
 
 
-
-
-// Booking
-// quantity and seat number
-
-Member member;
-Member memberTemp;
-Member memberTemp2;
-staffinfo staffs;
-TrainSchedule schedule = { 0 };
-struct Date availableSeat[MAX_BOOKING_DAYS];
 
 void bookingMain() {
 	int mode, loginMode, trainID;

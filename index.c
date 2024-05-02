@@ -1080,7 +1080,7 @@ void modifyMember() {
 
 	if (fp == NULL) {
 		printf("Enable to open this file\n");
-		exit(-1);
+		return;
 	}
 
 	system("cls");
@@ -1969,7 +1969,7 @@ void searchSchedule() {
 			FILE* fptr = fopen("train_schedule.txt", "r");
 			if (fptr == NULL) {
 				printf("Error opening file\n");
-				exit(-1);
+				return;
 			}
 
 			printf("Enter Train ID to search: T");
@@ -2194,7 +2194,7 @@ void modifySchedule() {
 
 	if (fptr == NULL || temp == NULL) {
 		printf("Error opening file\n");
-		exit(-1);
+		return;
 	}
 
 	printf("\nTrain Schedule:\n");

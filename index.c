@@ -943,7 +943,7 @@ void addMember() {
 	FILE* fp;
 	fp = fopen("member.txt", "a");
 	system("cls");
-	memberLogo();
+
 	do {
 		// auto generate ID:
 		member.frontMemberID = 'M';
@@ -1036,7 +1036,7 @@ void searchMember() {
 	FILE* fp;
 	fp = fopen("member.txt", "r");
 	system("cls");
-	memberLogo();
+
 	if (fp == NULL) {
 		printf("Unable to open file!\n");
 		return;
@@ -1051,9 +1051,7 @@ void searchMember() {
 
 		if (frontID == member.frontMemberID && backID == member.backMemberID) {
 			found = 1;
-			printf("=============================================================================================\n");
 			printf("%-15s%-15s%-15s%-15s%-18s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
-			printf("=============================================================================================\n");
 			printf("%c%-13d %-14s %-14d %-14c %-17s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 			system("pause");
@@ -1195,14 +1193,14 @@ void displayMember() {
 	FILE* fp;
 	fp = fopen("member.txt", "r");
 	system("cls");
-	memberLogo();
+
 	if (fp == NULL) {
 		printf("Enable to open the file\n");
 		return;
 	}
-	printf("=============================================================================================\n");
+
 	printf("%-15s%-15s%-15s%-15s%-18s%-15s\n", "Member ID", "Name", "Password", "Gender", "IC", "Contact Number");
-	printf("=============================================================================================\n");
+
 
 	while (!feof(fp)) {
 		fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
@@ -1904,7 +1902,7 @@ int addSchedule(int currentTrainID) {
 	scanf("%f", &schedule.ticketPrice);
 
 	char confirm; // check confirm
-	printf("Confirm add schedule? (Y/N): ");
+	printf("\nConfirm add schedule? (Y/N): ");
 	scanf(" %c", &confirm);
 	if (confirm != 'Y' && confirm != 'y') {
 		printf("\nCancelled\n");
@@ -2230,12 +2228,47 @@ void modifySchedule() {
 			rewind(stdin);
 			scanf(" %[^\n]", schedule.arrivalStation);
 			rewind(stdin);
-			printf("Enter New Departure Date (DD/MM/YYYY): ");
-			rewind(stdin);
-			scanf("%d/%d/%d", &schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year);
-			printf("Enter New Arrival Date (DD/MM/YYYY): ");
-			rewind(stdin);
-			scanf("%d/%d/%d", &schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year);
+			do {
+				printf("Enter New Departure Date (DD/MM/YYYY): ");
+				rewind(stdin);
+
+				// compares the return value of scanf with 3
+				if (scanf("%d/%d/%d", &schedule.departureDate.day, &schedule.departureDate.month, &schedule.departureDate.year) != 3) {
+					printf("Invalid input format. Please try again.\n");
+					rewind(stdin); // clear input buffer
+					continue;
+				}
+
+				// validate day, month, and year individually
+				if (schedule.departureDate.day < 1 || schedule.departureDate.day > 31 ||
+					schedule.departureDate.month < 1 || schedule.departureDate.month > 12 ||
+					schedule.departureDate.year != LATEST_YEAR) {
+					printf("Invalid date. Please enter a valid date.\n");
+					continue;
+				}
+
+				break;
+			} while (1);
+
+			do {
+				printf("Enter New Arrival Date (DD/MM/YYYY): ");
+				rewind(stdin);
+				if (scanf("%d/%d/%d", &schedule.arrivalDate.day, &schedule.arrivalDate.month, &schedule.arrivalDate.year) != 3) {
+					printf("Invalid input format. Please try again.\n");
+					rewind(stdin); // clear input buffer
+					continue;
+				}
+
+				// validate day, month, and year individually
+				if (schedule.arrivalDate.day < 1 || schedule.arrivalDate.day > 31 ||
+					schedule.arrivalDate.month < 1 || schedule.arrivalDate.month > 12 ||
+					schedule.arrivalDate.year != LATEST_YEAR) {
+					printf("Invalid date. Please enter a valid date.\n");
+					continue;
+				}
+
+				break;
+			} while (1);
 
 			do {
 				printf("Enter New Departure Time 24 hours (HH:MM): ");
@@ -2267,7 +2300,7 @@ void modifySchedule() {
 			scanf("%f", &schedule.ticketPrice);
 
 			char confirm; // check confirm
-			printf("Confirm modify (Y/N): ");
+			printf("\nConfirm modify (Y/N): ");
 			scanf(" %c", &confirm);
 			if (confirm != 'Y' && confirm != 'y') {
 				printf("\nCancelled\n");

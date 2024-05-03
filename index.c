@@ -1969,7 +1969,7 @@ void searchSchedule() {
 			FILE* fptr = fopen("train_schedule.txt", "r");
 			if (fptr == NULL) {
 				printf("Error opening file\n");
-				return;
+				exit(-1);
 			}
 
 			printf("Enter Train ID to search: T");
@@ -2194,7 +2194,7 @@ void modifySchedule() {
 
 	if (fptr == NULL || temp == NULL) {
 		printf("Error opening file\n");
-		return;
+		exit(-1);
 	}
 
 	printf("\nTrain Schedule:\n");
@@ -2480,7 +2480,7 @@ void deleteSchedule() {
 				schedule.availableSeats, schedule.ticketPrice);
 
 			char confirm;
-			printf("Confirm delete (Y/N): ");
+			printf("\nConfirm delete (Y/N): ");
 			rewind(stdin);
 			scanf(" %c", &confirm);
 			if (confirm != 'Y' && confirm != 'y') {
@@ -2670,7 +2670,7 @@ void scheduleReport() {
 	printf("==============================\n");
 	printf("       Schedule Report\n");
 	printf("==============================\n");
-	printf("1. Overal Schedule Report\n");
+	printf("1. Overall Schedule Report\n");
 	printf("2. Schedule Report By Month\n");
 	printf("3. Back\n\n");
 	printf("Enter your selection: ");
@@ -2681,7 +2681,7 @@ void scheduleReport() {
 		system("cls");
 		scheduleLogo();
 		printf("================================================\n");
-		printf("                 Overal Train Schedule Report\n");
+		printf("                 Overall Train Schedule Report\n");
 		printf("============================================================================================================\n");
 		printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
 		printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
@@ -2737,7 +2737,7 @@ void scheduleReport() {
 
 		printf("------------------------------------------------------------------------------------------------------------\n\n");
 		printf("==================== Generated Report As Below ====================\n\n");
-		printf("Overal Schedule Report\n");
+		printf("Overall Schedule Report\n");
 		printf("----------------------\n");
 		printf("Total Trains: %d\n", totalTrains);
 		printf("Total Seats Available: %d\n", totalSeats);
@@ -2749,7 +2749,7 @@ void scheduleReport() {
 		rewind(stdin);
 		scanf("%c", &cont);
 		if (cont == 'y' || cont == 'Y') {
-			fprintf(fptr, "Overal Schedule Report\n");
+			fprintf(fptr, "Overall Schedule Report\n");
 			fprintf(fptr, "----------------------\n");
 			fprintf(fptr, "Total Trains: %d\n", totalTrains);
 			fprintf(fptr, "Total Seats Available: %d\n", totalSeats);
@@ -2765,7 +2765,7 @@ void scheduleReport() {
 		system("cls");
 		scheduleLogo();
 		printf("==============================\n");
-		printf("       Schedule Report\n");
+		printf("    Schedule Report By Month\n");
 		printf("==============================\n");
 
 		if (fscanf(scheduleFiles, "T%d, %[^,], %[^,], %d/%d/%d, %d/%d/%d, %d:%d, %d:%d, %d, %f\n",
@@ -2880,8 +2880,7 @@ void scheduleLogo() {
 	printf(" ____) | (__| | | |  __/ (_| | |_| | |  __/\n");
 	printf("|_____/ \\___|_| |_|\\___|\\__,_|\\__,_|_|\\___|\n");
 }
-
-
+			
 
 void bookingMain() {
 	int mode, loginMode, trainID;

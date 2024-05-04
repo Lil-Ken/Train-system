@@ -881,31 +881,34 @@ Member member;
 void memberMain() {
 	loginStaffMem();
 
-	int mode;
-	mode = memberMenu();
-	switch (mode) {
-	case 1:
-		addMember();
-		break;
-	case 2:
-		searchMember();
-		break;
-	case 3:
-		modifyMember();
-		break;
-	case 4:
-		displayMember();
-		break;
-	case 5:
-		deleteMember();
-		break;
-	case 6:
-		main();
-	default:
-		break;
+	while (1) {
+		int mode;
+		mode = memberMenu();
+		switch (mode) {
+		case 1:
+			addMember();
+			break;
+		case 2:
+			searchMember();
+			break;
+		case 3:
+			modifyMember();
+			break;
+		case 4:
+			displayMember();
+			break;
+		case 5:
+			deleteMember();
+			break;
+		case 6:
+			main();
+		default:
+			break;
+		}
+
+		system("pause");
 	}
 
-	system("pause");
 }
 
 // display the member menu
@@ -1055,14 +1058,14 @@ void searchMember() {
 			printf("%c%-13d %-14s %-14d %-14c %-17s %-14s\n", member.frontMemberID, member.backMemberID, member.name, member.password, member.gender, member.IC, member.contactNumber);
 
 			system("pause");
-			memberMain();
+			return;
 		}
 	}
 
 	if (!found) {
 		printf("Member not found!\n");
 		system("pause");
-		memberMain();
+		return;
 	}
 
 
@@ -1187,7 +1190,7 @@ void modifyMember() {
 	rename("memberModify.txt", "member.txt");
 
 	system("pause");
-	memberMain();
+	return;
 
 }
 

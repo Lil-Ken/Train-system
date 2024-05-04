@@ -2883,7 +2883,7 @@ void scheduleLogo() {
 	printf(" ____) | (__| | | |  __/ (_| | |_| | |  __/\n");
 	printf("|_____/ \\___|_| |_|\\___|\\__,_|\\__,_|_|\\___|\n");
 }
-			
+
 
 void bookingMain() {
 	int mode, loginMode, trainID;
@@ -3118,7 +3118,7 @@ void addBooking() {
 
 	// select seat
 	printf("\n             Select Seat            \n");
-	printf("<<< Enter 0 to veiw available seat >>>\n");
+	printf("<<< Enter 0 to view available seat >>>\n");
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	for (int i = 0; i < member.book[bookingNum].quantity; i++) { // based on quantity
 		while (1) {
@@ -3514,7 +3514,7 @@ void modifyBooking() {
 				case 1:
 					// select seat
 					printf("\n             Select Seat            \n");
-					printf("<<< Enter 0 to veiw available seat >>>\n");
+					printf("<<< Enter 0 to view available seat >>>\n");
 					printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 					for (int i = 0; i < memberTemp.book[cnt].quantity; i++) { // based on quantity
 						while (1) {
@@ -3607,7 +3607,7 @@ void modifyBooking() {
 
 						// select seat
 						printf("\n        Select Additional Seat      \n");
-						printf("<<< Enter 0 to veiw available seat >>>\n");
+						printf("<<< Enter 0 to view available seat >>>\n");
 						printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 						for (int i = oriQuantity; i < memberTemp.book[cnt].quantity; i++) { // based on quantity
 							while (1) {
@@ -3693,12 +3693,13 @@ void modifyBooking() {
 					break;
 
 				default:
+					return;
 					break;
 				}
 
 				do {
-					printf("\n[1] Confirm modify\n");
-					printf("[2] Cancel modify\n");
+					printf("\n1. Confirm modify\n");
+					printf("2. Cancel modify\n");
 					printf("Select number: ");
 					scanf(" %d", &selection);
 					rewind(stdin);
@@ -3996,8 +3997,12 @@ void displayBooking(int i, char mode[]) {
 	}
 
 
-	if (c == 0) printf("Record not found!\n");
-
+	if (c == 0) {
+		printf("Record not found!\n");
+		rewind(stdin);
+		while (getc(stdin) != '\n');
+		return;
+	}
 	if (i != 1) {
 		printf("Enter Any Key to continue...");
 		rewind(stdin);

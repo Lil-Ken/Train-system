@@ -2886,7 +2886,7 @@ void scheduleLogo() {
 
 
 void bookingMain() {
-	int mode, loginMode, trainID;
+	int mode, loginMode, trainID, found = 0;
 	bookingMenu(&loginMode);
 
 	// staff mode
@@ -2908,26 +2908,36 @@ void bookingMain() {
 				deleteBooking();
 				break;
 			case 4:
+				system("cls");
+				found = 0;
 				do {
-					system("cls");
-					printf("Enter Train ID that you want to view seats (Enter 0 to view train schedule): T");
+					printf("Enter Train ID to view seats (Enter 0 to view train schedule): T");
 					scanf("%d", &trainID);
 					rewind(stdin);
-
-					if (trainID <= 1000 || trainID >= 10000) {
-						continue;
-					}
+					printf("\n");
 
 					// display train information
-					if (trainID == 0) {
+					if (trainID == 0 && found != 1) {
+						found = 1;
 						schedulingData(trainID, "display", 0, 0);
 						printf("\n");
 						continue;
 					}
+
+					if (trainID <= 1000 || trainID >= 10000) {
+						continue;
+					}
+					else{
+						break;
+					}
+
 				} while (1);
 
 				system("cls");
 				displaySeat(trainID);
+				printf("Enter Any Key to continue...");
+				rewind(stdin);
+				while (getc(stdin) != '\n');
 				break;
 			case 5:
 				summaryReport();
@@ -3173,7 +3183,8 @@ void addBooking() {
 
 			} while (!(isdigit(member.book[bookingNum].trains.seats[i].seatNumber[0]) &&
 				isdigit(member.book[bookingNum].trains.seats[i].seatNumber[1]) &&
-				isalpha(member.book[bookingNum].trains.seats[i].seatNumber[2])) || repeat == 1);
+				(member.book[bookingNum].trains.seats[i].seatNumber[2] >= 'A' &&
+					member.book[bookingNum].trains.seats[i].seatNumber[2] <= 'D')) || repeat == 1);
 
 			// check if repeat seat number with booked seats
 			bool seatAvailability = seat(bookingNum, i, 0);
@@ -3568,7 +3579,8 @@ void modifyBooking() {
 
 							} while (!(isdigit(memberTemp.book[cnt].trains.seats[i].seatNumber[0]) &&
 								isdigit(memberTemp.book[cnt].trains.seats[i].seatNumber[1]) &&
-								isalpha(memberTemp.book[cnt].trains.seats[i].seatNumber[2])) || repeat == 1);
+								memberTemp.book[cnt].trains.seats[i].seatNumber[2] >= 'A' &&
+								memberTemp.book[cnt].trains.seats[i].seatNumber[2] <= 'D') || repeat == 1);
 
 							valid = false;
 							// check if repeat seat number with booked seats
@@ -3788,14 +3800,14 @@ void displayBooking(int i, char mode[]) {
 			if (strcmp(mode, "member") == 0)
 				printf("Member ID: M%d\n\n", memberTemp.backMemberID);
 
-			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 15; i++) printf("=");
-			for (int i = 0; i < 150; i++)
+			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 11; i++) printf("=");
+			for (int i = 0; i < 133; i++)
 				printf("=");
 			printf("\n");
-			if (strcmp(mode, "staff") == 0) printf("%-15s", "Member ID");
-			printf("%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-16s%-16s%-16s\n", "Booking ID", "Train ID", "Seat Number", "Coach", "Payment Info", "Ticket Status", "Booking Date", "Departure Date", "Quantity", "Amount");
-			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 15; i++) printf("=");
-			for (int i = 0; i < 150; i++)
+			if (strcmp(mode, "staff") == 0) printf("%-11s", "Member ID");
+			printf("%-12s%-10s%-17s%-13s%-15s%-15s%-15s%-16s%-10s%-10s\n", "Booking ID", "Train ID", "Seat Number", "Coach", "Payment Info", "Ticket Status", "Booking Date", "Departure Date", "Quantity", "Amount");
+			if (strcmp(mode, "staff") == 0) for (int i = 0; i < 11; i++) printf("=");
+			for (int i = 0; i < 133; i++)
 				printf("=");
 			printf("\n");
 		}
@@ -3803,8 +3815,8 @@ void displayBooking(int i, char mode[]) {
 		printf("\n");
 
 		// display data
-		if (strcmp(mode, "staff") == 0) printf("%c%-14d", MEMBER_FRONT_ID, memberTemp.backMemberID);
-		printf("%c%-14d%c%-14d", BOOKING_FRONT_ID, memberTemp.book[c].bookingID, TRAIN_FRONT_ID, memberTemp.book[c].trains.trainID);
+		if (strcmp(mode, "staff") == 0) printf("%c%-10d", MEMBER_FRONT_ID, memberTemp.backMemberID);
+		printf("%c%-11d%c%-9d", BOOKING_FRONT_ID, memberTemp.book[c].bookingID, TRAIN_FRONT_ID, memberTemp.book[c].trains.trainID);
 
 		// seat and coach based on quantity
 		// seat
@@ -3814,20 +3826,20 @@ void displayBooking(int i, char mode[]) {
 					if (i != 2) {
 						printf("%s, ", memberTemp.book[c].trains.seats[i].seatNumber);
 					}
-					else printf("%-5s", memberTemp.book[c].trains.seats[i].seatNumber); // 15 - 5 - 5 = 5
+					else printf("%-7s", memberTemp.book[c].trains.seats[i].seatNumber); // 15 - 5 - 5 = 5
 				}
 				else {
 					switch (memberTemp.book[c].quantity)
 					{
 					case 1:
-						printf("%-15s", memberTemp.book[c].trains.seats[i].seatNumber); // just 1 seat number
+						printf("%-17s", memberTemp.book[c].trains.seats[i].seatNumber); // just 1 seat number
 						break;
 					case 2:
 						if (i == 0) {
 							printf("%s, ", memberTemp.book[c].trains.seats[i].seatNumber);
 						}
 						else
-							printf("%-10s", memberTemp.book[c].trains.seats[i].seatNumber); // 15 - 5 = 10
+							printf("%-12s", memberTemp.book[c].trains.seats[i].seatNumber); // 15 - 5 = 10
 						break;
 					}
 				}
@@ -3841,19 +3853,19 @@ void displayBooking(int i, char mode[]) {
 					if (i != 2) {
 						printf("%c, ", memberTemp.book[c].trains.seats[i].coach);
 					}
-					else printf("%-9c", memberTemp.book[c].trains.seats[i].coach); // 15 - 3 - 3 = 9
+					else printf("%-7c", memberTemp.book[c].trains.seats[i].coach); // 15 - 3 - 3 = 9
 				}
 				else {
 					switch (memberTemp.book[c].quantity) {
 					case 1:
-						printf("%-15c", memberTemp.book[c].trains.seats[i].coach); // just 1 coach
+						printf("%-13c", memberTemp.book[c].trains.seats[i].coach); // just 1 coach
 						break;
 					case 2:
 						if (i == 0) {
 							printf("%c, ", memberTemp.book[c].trains.seats[i].coach);
 						}
 						else
-							printf("%-12c", memberTemp.book[c].trains.seats[i].coach); // 15 - 3 = 12
+							printf("%-10c", memberTemp.book[c].trains.seats[i].coach); // 15 - 3 = 12
 						break;
 					}
 				}
@@ -3867,32 +3879,32 @@ void displayBooking(int i, char mode[]) {
 		printf("%02d/%02d/%04d     %02d/%02d/%04d      ", memberTemp.book[c].bookingDate.day, memberTemp.book[c].bookingDate.month,
 			memberTemp.book[c].bookingDate.year, memberTemp.book[c].trains.departureDate.day, memberTemp.book[c].trains.departureDate.month,
 			memberTemp.book[c].trains.departureDate.year);
-		printf("%-16d%-16.2f\n", memberTemp.book[c].quantity, memberTemp.book[c].amount);
+		printf("%-10d%-10.2f\n", memberTemp.book[c].quantity, memberTemp.book[c].amount);
 
 		// 4-7
 		if (memberTemp.book[c].quantity > 3) {
-			if (strcmp(mode, "staff") == 0) printf("%15s", "");
-			printf("%30s", "");
+			if (strcmp(mode, "staff") == 0) printf("%11s", "");
+			printf("%22s", "");
 			// seat
 			for (int i = 3; i < memberTemp.book[c].quantity; i++) {
 				if (i >= 3 && i < 6) {
 					if (memberTemp.book[c].quantity >= 6) {
 						if (i != 5) {
-							printf("%-3s, ", memberTemp.book[c].trains.seats[i].seatNumber);
+							printf("%s, ", memberTemp.book[c].trains.seats[i].seatNumber);
 						}
-						else printf("%-5s", memberTemp.book[c].trains.seats[i].seatNumber);
+						else printf("%-7s", memberTemp.book[c].trains.seats[i].seatNumber);
 					}
 					else {
 						switch (memberTemp.book[c].quantity) {
 						case 4:
-							printf("%-15s", memberTemp.book[c].trains.seats[i].seatNumber);
+							printf("%-17s", memberTemp.book[c].trains.seats[i].seatNumber);
 							break;
 						case 5:
 							if (i == 3) {
 								printf("%s, ", memberTemp.book[c].trains.seats[i].seatNumber);
 							}
 							else
-								printf("%-10s", memberTemp.book[c].trains.seats[i].seatNumber);
+								printf("%-12s", memberTemp.book[c].trains.seats[i].seatNumber);
 							break;
 						}
 					}
@@ -3906,19 +3918,19 @@ void displayBooking(int i, char mode[]) {
 						if (i != 5) {
 							printf("%c, ", memberTemp.book[c].trains.seats[i].coach);
 						}
-						else printf("%-9c", memberTemp.book[c].trains.seats[i].coach);
+						else printf("%-7c", memberTemp.book[c].trains.seats[i].coach);
 					}
 					else {
 						switch (memberTemp.book[c].quantity) {
 						case 4:
-							printf("%-15c", memberTemp.book[c].trains.seats[i].coach);
+							printf("%-13c", memberTemp.book[c].trains.seats[i].coach);
 							break;
 						case 5:
 							if (i == 3) {
 								printf("%c, ", memberTemp.book[c].trains.seats[i].coach);
 							}
 							else
-								printf("%-12c", memberTemp.book[c].trains.seats[i].coach);
+								printf("%-10c", memberTemp.book[c].trains.seats[i].coach);
 							break;
 						}
 					}
@@ -3930,8 +3942,8 @@ void displayBooking(int i, char mode[]) {
 
 		// 7-9
 		if (memberTemp.book[c].quantity > 6 && memberTemp.book[c].quantity <= 9) {
-			if (strcmp(mode, "staff") == 0) printf("%15s", "");
-			printf("%15s", "");
+			if (strcmp(mode, "staff") == 0) printf("%11s", "");
+			printf("%22s", "");
 			// seat
 			for (int i = 6; i < memberTemp.book[c].quantity; i++) {
 				if (i >= 6 && i < 9) {
@@ -3939,19 +3951,19 @@ void displayBooking(int i, char mode[]) {
 						if (i != 8) {
 							printf("%s, ", memberTemp.book[c].trains.seats[i].seatNumber);
 						}
-						else printf("%-5s", memberTemp.book[c].trains.seats[i].seatNumber);
+						else printf("%-7s", memberTemp.book[c].trains.seats[i].seatNumber);
 					}
 					else {
 						switch (memberTemp.book[c].quantity) {
 						case 7:
-							printf("%-15s", memberTemp.book[c].trains.seats[i].seatNumber);
+							printf("%-17s", memberTemp.book[c].trains.seats[i].seatNumber);
 							break;
 						case 8:
 							if (i == 6) {
 								printf("%s, ", memberTemp.book[c].trains.seats[i].seatNumber);
 							}
 							else
-								printf("%-10s", memberTemp.book[c].trains.seats[i].seatNumber);
+								printf("%-12s", memberTemp.book[c].trains.seats[i].seatNumber);
 							break;
 						}
 					}
@@ -3965,19 +3977,19 @@ void displayBooking(int i, char mode[]) {
 						if (i != 8) {
 							printf("%c, ", memberTemp.book[c].trains.seats[i].coach);
 						}
-						else printf("%-9c", memberTemp.book[c].trains.seats[i].coach);
+						else printf("%-7c", memberTemp.book[c].trains.seats[i].coach);
 					}
 					else {
 						switch (memberTemp.book[c].quantity) {
 						case 7:
-							printf("%-15c", memberTemp.book[c].trains.seats[i].coach);
+							printf("%-13c", memberTemp.book[c].trains.seats[i].coach);
 							break;
 						case 8:
 							if (i == 6) {
 								printf("%c, ", memberTemp.book[c].trains.seats[i].coach);
 							}
 							else
-								printf("%-12c", memberTemp.book[c].trains.seats[i].coach);
+								printf("%-10c", memberTemp.book[c].trains.seats[i].coach);
 							break;
 						}
 					}
@@ -3989,10 +4001,10 @@ void displayBooking(int i, char mode[]) {
 
 		// 10
 		if (memberTemp.book[c].quantity == 10) {
-			if (strcmp(mode, "staff") == 0) printf("%15s", "");
-			printf("%30s", "");
-			printf("%-15s", memberTemp.book[c].trains.seats[9].seatNumber);
-			printf("%-15c", memberTemp.book[c].trains.seats[9].coach);
+			if (strcmp(mode, "staff") == 0) printf("%11s", "");
+			printf("%22s", "");
+			printf("%-17s", memberTemp.book[c].trains.seats[9].seatNumber);
+			printf("%-13c", memberTemp.book[c].trains.seats[9].coach);
 		}
 		c++;
 	}
@@ -4389,7 +4401,7 @@ void summaryReport() {
 }
 
 bool schedulingData(int trainID, char purpose[], int bookingNum, double* price) {
-	availableSeats(1);
+	availableSeats(0);
 	FILE* fptr = fopen("train_schedule.txt", "r");
 
 	if (fptr == NULL) {

@@ -151,7 +151,7 @@ int bookingID_Num(int* id);
 void displaySeat(int trainID);
 bool seat(int bookingNum, int count, int mode);
 void modifySeat(int mode, int bookingNum, int count, bool* valid);
-void removeSeat(int trainID, int bookingNum);
+void removeSeat(int trainID, int bookingNum, char coach, char seat[]);
 void bookingLogo();
 
 
@@ -1687,8 +1687,8 @@ void staffVerify() {
 	}staffinfo;
 
 	int staffID, mode;
-	char frontid, password[7];
-	int backid, num = 0;
+	char password[7];
+	int num = 0;
 	char cont;
 	staffinfo staff;
 
@@ -3661,7 +3661,8 @@ void modifyBooking() {
 
 								} while (!(isdigit(memberTemp.book[cnt].trains.seats[i].seatNumber[0]) &&
 									isdigit(memberTemp.book[cnt].trains.seats[i].seatNumber[1]) &&
-									isalpha(memberTemp.book[cnt].trains.seats[i].seatNumber[2])) || repeat == 1);
+									memberTemp.book[cnt].trains.seats[i].seatNumber[2] >= 'A' &&
+									memberTemp.book[cnt].trains.seats[i].seatNumber[2] <= 'D') || repeat == 1);
 
 								double price;
 								// update quantity
@@ -4144,7 +4145,7 @@ void deleteBooking() {
 				if (confirm == 'N' || confirm == 'n') {
 					return;
 				}
-			} while (!(confirm == 'Y' && confirm == 'y'));
+			} while (!(confirm == 'Y' || confirm == 'y'));
 			removeSeat(memberTemp.book[cnt].trains.trainID, cnt, memberTemp.book[cnt].trains.seats[0].coach, memberTemp.book[cnt].trains.seats[0].seatNumber);
 
 		}
@@ -4388,7 +4389,7 @@ void summaryReport() {
 }
 
 bool schedulingData(int trainID, char purpose[], int bookingNum, double* price) {
-
+	availableSeats(1);
 	FILE* fptr = fopen("train_schedule.txt", "r");
 
 	if (fptr == NULL) {
@@ -4487,7 +4488,7 @@ bool loginMember(int* ID) {
 		// read all records
 		fseek(fp, 0, SEEK_SET);
 		while (!feof(fp)) {
-			fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.backMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
+			fscanf(fp, "%c%d | %[^|]| %d | %[^|]| %c | %[^|]| %[^\n]\n", &member.frontMemberID, &member.backMemberID, &member.name, &member.password, &member.passRecovery, &member.gender, &member.IC, &member.contactNumber);
 			// if ID and password is correct
 			if (member.backMemberID == backMemberID && member.password == pass) {
 				printf("Successful login!\n");
@@ -4679,7 +4680,7 @@ void displaySeat(int trainID) {
 		valid = 0;
 	}
 
-	char coach, row[3];
+	char coach;
 	char seatA[4], seatB[4], seatC[4], seatD[4];
 
 	printf("           ._______.\n");

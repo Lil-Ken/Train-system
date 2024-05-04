@@ -3004,7 +3004,7 @@ void bookingMenuStaff(int* mode) {
 		printf("Delete a Booking Record ----------------- 3\n");
 		printf("View Seats ------------------------------ 4\n");
 		printf("View Booking Summary Report ------------- 5\n");
-		printf("Back to Main Menu ----------------------- 6\n\n");
+		printf("Log Out and Back to Main Menu ----------- 6\n\n");
 		printf("Enter Number ---------------------------- ");
 		scanf(" %d", mode);
 		rewind(stdin);
@@ -3024,7 +3024,7 @@ void bookingMenuMember(int* mode) {
 		printf("Modify Booking Details ------------------- 3\n");
 		printf("View Booking Details --------------------- 4\n");
 		printf("Cancel a Booking ------------------------- 5\n");
-		printf("Back to Main Menu ------------------------ 6\n\n");
+		printf("Log Out and Back to Main Menu ------------ 6\n\n");
 		printf("Enter Number ----------------------------- ");
 		scanf(" %d", mode);
 		rewind(stdin);
@@ -4051,7 +4051,7 @@ void cancelBooking() {
 				if (confirm == 'N' || confirm == 'n') {
 					return;
 				}
-			} while (!(confirm == 'Y' && confirm == 'y'));
+			} while (!(confirm == 'Y' || confirm == 'y'));
 
 			removeSeat(memberTemp.book[cnt].trains.trainID, cnt, memberTemp.book[cnt].trains.seats[0].coach, memberTemp.book[cnt].trains.seats[0].seatNumber);
 
@@ -4094,14 +4094,12 @@ void cancelBooking() {
 			cnt++;
 		}
 		printf("Successfully cancel\n");
-		printf("Enter Any Key to continue...");
-		rewind(stdin);
-		while (getc(stdin) != '\n');
 
 		fclose(fpt);
 		fclose(fpt2);
 	}
 	else printf("Invalid Booking ID\n");
+
 	printf("Enter Any Key to continue...");
 	rewind(stdin);
 	while (getc(stdin) != '\n');

@@ -596,6 +596,7 @@ int passwordRecovery(int id) {
 
 
 	printf("Please enter your father name : ");
+	rewind(stdin);
 	scanf("%[^\n]", passrec);
 
 	for (int i = 0; passrec[i] != '\0'; i++) {
@@ -1275,6 +1276,7 @@ void passwordRecoveryMember(int* memberID) {
 	}
 
 	printf("\nEnter the favorite food that you like:");
+	rewind(stdin);
 	scanf("%[^\n]", &passrecov);
 	rewind(stdin);
 
@@ -1459,7 +1461,7 @@ void memberLogo() {
 
 
 
-// Shedule
+// Schedule
 
 int scheduleMode(int selection) {
 	system("cls");
@@ -1531,7 +1533,6 @@ void schedulingMain() {
 						break;
 					case 6:
 						scheduleReport(&mode);
-						system("pause");
 						break;
 					case 7:
 						break;
@@ -1595,9 +1596,15 @@ void memberVerify(int* mode) {
 		printf("Enter Your Member ID: M");
 		rewind(stdin);
 		scanf("%d", &memberID);
-		printf("Enter password: ");
+		printf("Enter password (Enter 0 if forgot password): ");
 		rewind(stdin);
 		scanf("%d", &password);
+		if (password == 0) {
+			passwordRecoveryMember(&memberID);
+			printf("\n");
+			system("pause");
+			continue;
+		}
 
 		rewind(fp); // reset file pointer to the beginning
 
@@ -1618,13 +1625,12 @@ void memberVerify(int* mode) {
 			return;
 		}
 		else {
-			printf("\nInvalid Member ID or Password\n");
 			printf("Invalid ID or Password, please try again\n\n");
-			printf("Try again --------- Y\n");
-			printf("Back -------------- N\n");
-			printf("Enter your selection: ");
+			printf("Try again ----------- Y\n");
+			printf("Back ---------------- N\n\n");
+			printf("Enter your option --- ");
 			rewind(stdin);
-			scanf(" %c", &cnt);
+			scanf("%c", &cnt);
 		}
 	} while (cnt == 'y' || cnt == 'Y');
 
@@ -1710,8 +1716,13 @@ void staffVerify() {
 	rewind(stdin);
 	scanf("%d", &staffID);
 	rewind(stdin);
-	printf("Enter password: ");
+	printf("Enter password (Enter 0 if forgot password): ");
 	scanf("%s", password);
+
+	if (strcmp(password, "0") == 0) {
+		passwordRecovery(staffID);		
+	}
+
 
 	while (fread(&staff, sizeof(staffinfo), 1, stf) != 0) {
 		if (staffID == staff.backID && strcmp(password, staff.pass) == 0) {
@@ -1723,9 +1734,9 @@ void staffVerify() {
 	if (num == 0) {
 
 		printf("Invalid ID or Password, please try again\n\n");
-		printf("Continue --------- Y\n");
-		printf("Back ------------- N\n");
-		printf("Enter your selection: ");
+		printf("Try again ----------- Y\n");
+		printf("Back ---------------- N\n\n");
+		printf("Enter your option --- ");
 		rewind(stdin);
 		scanf("%c", &cont);
 		rewind(stdin);
@@ -2660,7 +2671,7 @@ void scheduleReport() {
 	int selection;
 	int totalTrains = 0, totalSeats = 0, maxSeats = 0;
 	float totalTicketPrice = 0, averageTicketPrice = 0;
-	int startMonth, startYear, endMonth, endYear;
+	int month, year;
 	char cont;
 
 	int display = 0; // to call the available seats function and update the lates available seats without print any information
@@ -2767,6 +2778,7 @@ void scheduleReport() {
 			fprintf(fptr, "Average Ticket Price: %.2f\n", averageTicketPrice);
 			fprintf(fptr, "Max Seats on a Train: %d\n", MAX_AVAILABLE_SEATS);
 			printf("Report Generated!\n\n");
+			system("pause");
 		}
 
 		fclose(scheduleFiles);
@@ -2793,18 +2805,16 @@ void scheduleReport() {
 		//reset the file pointer for reading from beginning
 		rewind(scheduleFiles);
 
-		printf("Enter start of month and year (MM/YYYY): ");
+		printf("Enter month and year (MM/YYYY): ");
 		rewind(stdin);
-		scanf("%d/%d", &startMonth, &startYear);
-		printf("Enter end of month and year (MM//YYYY): ");
-		rewind(stdin);
-		scanf("%d/%d", &endMonth, &endYear);
+		scanf("%d/%d", &month, &year);
+
 
 		system("cls");
 		printf("============================================================\n");
 		printf("                  Train Schedule Report\n");
 		printf("============================================================\n");
-		printf("                  By %02d/%04d to %02d/%04d\n", startMonth, startYear, endMonth, endYear);
+		printf("                  By %02d/%04d\n", month, year);
 		printf("============================================================================================================\n");
 		printf("Train ID    Departure    Arrival       Departure    Arrival       Departure    Arrival    Available   Ticket\n");
 		printf("            Station      Station       Date         Date          Time         Time       Seats       Price\n");
@@ -2823,7 +2833,7 @@ void scheduleReport() {
 				&schedule.arrivalTime.hour, &schedule.arrivalTime.min,
 				&schedule.availableSeats, &schedule.ticketPrice);
 
-			if ((startMonth == schedule.departureDate.month && startYear == schedule.departureDate.year) || (endMonth == schedule.departureDate.month) && endYear) {
+			if (month == schedule.departureDate.month && year == schedule.departureDate.year) {
 				printf("%c%d\t    %-13s%-14s%02d/%02d/%04d   %02d/%02d/%04d\t   %02d:%02d\t%02d:%02d\t    %-9d %.2f\n",
 					TRAIN_FRONT_ID,
 					schedule.trainID, schedule.departureStation, schedule.arrivalStation,
@@ -2848,7 +2858,7 @@ void scheduleReport() {
 
 		printf("------------------------------------------------------------------------------------------------------------\n\n");
 		printf("==================== Generated Report As Below ====================\n\n");
-		printf("Schedule Report By %02d/%04d to %02d/%04d\n", startMonth, startYear, endMonth, endYear);
+		printf("Schedule Report By %02d/%04d\n", month, year);
 		printf("-----------------------------------------\n");
 		printf("Total Trains: %d\n", totalTrains);
 		printf("Total Seats Available: %d\n", totalSeats);
@@ -2860,13 +2870,14 @@ void scheduleReport() {
 		rewind(stdin);
 		scanf("%c", &cont);
 		if (cont == 'y' || cont == 'Y') {
-			fprintf(fptr, "Schedule Report By %02d/%04d to %02d/%04d\n", startMonth, startYear, endMonth, endYear);
+			fprintf(fptr, "Schedule Report By %02d/%04d\n", month, year);
 			fprintf(fptr, "-----------------------------------------\n");
 			fprintf(fptr, "Total Trains: %d\n", totalTrains);
 			fprintf(fptr, "Total Seats Available: %d\n", totalSeats);
 			fprintf(fptr, "Average Ticket Price: %.2f\n", averageTicketPrice);
 			fprintf(fptr, "Max Seats on a Train: %d\n", MAX_AVAILABLE_SEATS);
 			printf("Report Generated!\n\n");
+			system("pause");
 		}
 
 		fclose(scheduleFiles);
@@ -4373,7 +4384,7 @@ void summaryReport() {
 	if (selection == 1) {
 		strcpy(report, "MonthlyBookingReport.txt");
 	}
-	else{
+	else {
 		strcpy(report, "YearlyBookingReport.txt");
 	}
 	// write into file

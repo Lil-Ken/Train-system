@@ -2577,19 +2577,18 @@ void availableSeats(int display) {
 	int c = 0; // c = customer, array store infromation start from customer 0, and continue...
 	while (fread(&memberTemp.backMemberID, sizeof(int), 1, bookingFiles) == 1 &&
 		fread(&memberTemp.book[c], sizeof(Booking), 1, bookingFiles) == 1) {
-		if (strcmp(memberTemp.book[c].ticketStatus, "Booked")==0) {
+		if (strcmp(memberTemp.book[c].ticketStatus, "Booked") == 0) {
 			//this is calculate total booked seats for each train 
-		//totalBookedSeats[T1001] values is 0 then += trainId.quantity
+			//totalBookedSeats[T1001] values is 0 then += trainId.quantity
 			totalBookedSeats[memberTemp.book[c].trains.trainID] += memberTemp.book[c].quantity;
-			
-			if (strcmp(memberTemp.book[c].ticketStatus, "Canceled")==0) {
+
+			if (strcmp(memberTemp.book[c].ticketStatus, "Canceled") == 0) {
 				//this is calculate total booked seats for each train minus for member who cancel booking
 				totalBookedSeats[memberTemp.book[c].trains.trainID] -= memberTemp.book[c].quantity;
 			}
 			c++;
 		}
-		
-		
+
 	}
 	fclose(bookingFiles);
 
@@ -4225,7 +4224,7 @@ void deleteBooking() {
 }
 
 void summaryReport() {
-	int selection, month, year, found = 0;
+	int selection, month, year, found = 0, select;
 	const char* monthNames[] = { "Invalid", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 	int totalBookings = 0;
 	double totalRevenue = 0;
@@ -4247,7 +4246,7 @@ void summaryReport() {
 
 	while (1) {
 		while (1) {
-			printf(" report type\n");
+			printf(" Report Type\n");
 			printf("=============\n");
 			printf("[1] Monthly Report\n");
 			printf("[2] Yearly Report\n");
@@ -4257,9 +4256,9 @@ void summaryReport() {
 
 			if (selection == 1) {
 				do {
-					printf("Enter the year: ");
+					printf("Enter the year (2020-2024): ");
 					scanf("%d", &year);
-				} while (!(year >= 2000 && year <= 2025));
+				} while (!(year >= 2020 && year <= 2024));
 				do {
 					printf("Enter the month (1-12): ");
 					scanf("%d", &month);
@@ -4268,9 +4267,9 @@ void summaryReport() {
 			}
 			else if (selection == 2) {
 				do {
-					printf("Enter the year (2000-2024): ");
+					printf("Enter the year (2020-2024): ");
 					scanf("%d", &year);
-				} while (!(year >= 2000 && year <= 2024));
+				} while (!(year >= 2020 && year <= 2024));
 				break;
 			}
 			else if (selection == 3) return;
@@ -4346,7 +4345,7 @@ void summaryReport() {
 	else {
 		printf(" Yearly Booking Summary Report for the year %d\n", year);
 	}
-	printf("================================================\n\n");
+	printf("=================================================\n\n");
 	printf("Total number of bookings: %d\n", totalBookings);
 	printf("Total revenue: RM%.2f\n", totalRevenue);
 	printf("Average booking amount: RM%.2f\n", averageAmount);
@@ -4363,14 +4362,22 @@ void summaryReport() {
 		printf("\n[1] Generate Text File Report\n");
 		printf("[2] Back\n");
 		printf("Enter number: ");
-		scanf(" %d", &selection);
+		scanf(" %d", &select);
 		rewind(stdin);
-	} while (!(selection == 1 || selection == 2));
+	} while (!(select == 1 || select == 2));
 
-	if (selection == 2) return;
+	if (select == 2) return;
 
+	// report type
+	char report[30];
+	if (selection == 1) {
+		strcpy(report, "MonthlyBookingReport.txt");
+	}
+	else{
+		strcpy(report, "YearlyBookingReport.txt");
+	}
 	// write into file
-	FILE* fp2 = fopen("summaryBookingReport.txt", "w");
+	FILE* fp2 = fopen(report, "w");
 
 	if (fp2 == NULL) {
 		printf("Unable to open file\n");
@@ -4381,12 +4388,12 @@ void summaryReport() {
 	}
 
 	if (selection == 1) {
-		fprintf(fp2, " Monthly Booking Summary Report for %s %d:\n", monthNames[month], year);
+		fprintf(fp2, " Monthly Booking Summary Report for %s %d\n", monthNames[month], year);
 	}
 	else {
-		fprintf(fp2, " Yearly Booking Summary Report for the year %d:\n", year);
+		fprintf(fp2, " Yearly Booking Summary Report for the year %d\n", year);
 	}
-	printf("================================================\n\n");
+	fprintf(fp2, "==================================================\n\n");
 	fprintf(fp2, "Total number of bookings: %d\n", totalBookings);
 	fprintf(fp2, "Total revenue generated: RM%.2f\n", totalRevenue);
 	fprintf(fp2, "Average booking amount: RM%.2f\n", averageAmount);
@@ -4400,7 +4407,7 @@ void summaryReport() {
 	fprintf(fp2, " - Touch n Go: %d\n", touchNGoCount);
 
 
-	printf("\nSuccessfuly generate a Text File Report: summaryBookingReport.txt\n");
+	printf("\nSuccessfuly generate a Text File Report: %s\n", report);
 
 	fclose(fp2);
 	printf("Enter Any Key to continue...");

@@ -509,8 +509,11 @@ int modifyStaff() {
 					} while (valid == 0);
 					break;
 				case 4:
+					fclose(stf);
+					fclose(stf1);
 					staffMain();
-					break;
+					return 0;
+				
 				default:
 					break;
 				}

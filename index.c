@@ -2577,10 +2577,19 @@ void availableSeats(int display) {
 	int c = 0; // c = customer, array store infromation start from customer 0, and continue...
 	while (fread(&memberTemp.backMemberID, sizeof(int), 1, bookingFiles) == 1 &&
 		fread(&memberTemp.book[c], sizeof(Booking), 1, bookingFiles) == 1) {
-		//this is calculate total booked seats for each train 
+		if (strcmp(memberTemp.book[c].ticketStatus, "Booked")==0) {
+			//this is calculate total booked seats for each train 
 		//totalBookedSeats[T1001] values is 0 then += trainId.quantity
-		totalBookedSeats[memberTemp.book[c].trains.trainID] += memberTemp.book[c].quantity;
-		c++;
+			totalBookedSeats[memberTemp.book[c].trains.trainID] += memberTemp.book[c].quantity;
+			
+			if (strcmp(memberTemp.book[c].ticketStatus, "Canceled")==0) {
+				//this is calculate total booked seats for each train minus for member who cancel booking
+				totalBookedSeats[memberTemp.book[c].trains.trainID] -= memberTemp.book[c].quantity;
+			}
+			c++;
+		}
+		
+		
 	}
 	fclose(bookingFiles);
 
@@ -2927,7 +2936,7 @@ void bookingMain() {
 					if (trainID <= 1000 || trainID >= 10000) {
 						continue;
 					}
-					else{
+					else {
 						break;
 					}
 
